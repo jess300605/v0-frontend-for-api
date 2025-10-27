@@ -34,13 +34,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
   const mainNavigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Home, permission: null },
-    { name: "Productos", href: "/productos", icon: Package, permission: "productos.ver" },
-    { name: "Ventas", href: "/ventas", icon: ShoppingCart, permission: "ventas.ver" },
-    { name: "Reportes", href: "/reportes", icon: BarChart3, permission: "reportes.ventas" },
+    { name: "Dashboard", href: "/admin/dashboard", icon: Home, permission: null },
+    { name: "Productos", href: "/admin/productos", icon: Package, permission: "productos.ver" },
+    { name: "Ventas", href: "/admin/ventas", icon: ShoppingCart, permission: "ventas.ver" },
+    { name: "Reportes", href: "/admin/reportes", icon: BarChart3, permission: "reportes.ventas" },
   ]
 
-  const adminNavigation = [{ name: "Usuarios", href: "/usuarios", icon: Users, permission: "usuarios.ver" }]
+  const adminNavigation = [{ name: "Usuarios", href: "/admin/usuarios", icon: Users, permission: "usuarios.ver" }]
 
   const filteredMainNav = mainNavigation.filter((item) => !item.permission || hasPermission(item.permission))
   const filteredAdminNav = adminNavigation.filter((item) => !item.permission || hasPermission(item.permission))
@@ -60,7 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
+              <Link href="/admin/dashboard">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Package className="size-4" />
                 </div>
