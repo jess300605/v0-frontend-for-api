@@ -197,72 +197,86 @@ export default function ReportesPage() {
               </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Productos Más Vendidos</CardTitle>
-                <CardDescription>Top productos por rendimiento</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {reporteProductos?.productos?.slice(0, 10).map((item, index) => (
-                    <div key={item.producto.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center">
-                          {index + 1}
-                        </Badge>
-                        <div>
-                          <p className="font-medium text-sm">{item.producto.nombre}</p>
-                          <p className="text-xs text-muted-foreground">{item.producto.categoria}</p>
+            {!reporteProductos?.productos || reporteProductos.productos.length === 0 ? (
+              <Card>
+                <CardContent className="py-12">
+                  <div className="text-center text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">No hay datos de productos disponibles</p>
+                    <p className="text-sm mt-2">Los reportes se generarán cuando haya ventas registradas</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Productos Más Vendidos</CardTitle>
+                    <CardDescription>Top productos por rendimiento</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {reporteProductos.productos.slice(0, 10).map((item, index) => (
+                        <div key={item.producto.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center">
+                              {index + 1}
+                            </Badge>
+                            <div>
+                              <p className="font-medium text-sm">{item.producto.nombre}</p>
+                              <p className="text-xs text-muted-foreground">{item.producto.categoria}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">{item.estadisticas.total_vendido} unidades</p>
+                            <p className="text-xs text-muted-foreground">
+                              ${item.estadisticas.ingresos_generados.toLocaleString()}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{item.estadisticas.total_vendido} unidades</p>
-                        <p className="text-xs text-muted-foreground">
-                          ${item.estadisticas.ingresos_generados.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Detalle de Productos</CardTitle>
-                <CardDescription>Estadísticas completas por producto</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Producto</TableHead>
-                        <TableHead>Categoría</TableHead>
-                        <TableHead className="text-right">Vendidos</TableHead>
-                        <TableHead className="text-right">Ingresos</TableHead>
-                        <TableHead className="text-right">% Ingresos</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {reporteProductos?.productos?.map((item) => (
-                        <TableRow key={item.producto.id}>
-                          <TableCell className="font-medium">{item.producto.nombre}</TableCell>
-                          <TableCell>{item.producto.categoria}</TableCell>
-                          <TableCell className="text-right">{item.estadisticas.total_vendido}</TableCell>
-                          <TableCell className="text-right">
-                            ${item.estadisticas.ingresos_generados.toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {item.estadisticas.porcentaje_ingresos.toFixed(1)}%
-                          </TableCell>
-                        </TableRow>
                       ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Detalle de Productos</CardTitle>
+                    <CardDescription>Estadísticas completas por producto</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Producto</TableHead>
+                            <TableHead>Categoría</TableHead>
+                            <TableHead className="text-right">Vendidos</TableHead>
+                            <TableHead className="text-right">Ingresos</TableHead>
+                            <TableHead className="text-right">% Ingresos</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {reporteProductos.productos.map((item) => (
+                            <TableRow key={item.producto.id}>
+                              <TableCell className="font-medium">{item.producto.nombre}</TableCell>
+                              <TableCell>{item.producto.categoria}</TableCell>
+                              <TableCell className="text-right">{item.estadisticas.total_vendido}</TableCell>
+                              <TableCell className="text-right">
+                                ${item.estadisticas.ingresos_generados.toLocaleString()}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {item.estadisticas.porcentaje_ingresos.toFixed(1)}%
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </TabsContent>
         </Tabs>
       </div>
