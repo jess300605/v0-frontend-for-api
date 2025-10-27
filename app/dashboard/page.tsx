@@ -1,0 +1,173 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Package, ShoppingCart, TrendingUp, Users, DollarSign, AlertCircle } from "lucide-react"
+import { api } from "@/lib/api"
+import { DashboardLayout } from "@/components/dashboard-layout"
+import { MetricCard } from "@/components/metric-card"
+import { RecentSales } from "@/components/recent-sales"
+import { LowStockAlert } from "@/components/low-stock-alert"
+
+interface DashboardData {
+  ventas_hoy: number
+  ventas_mes: number
+  productos_total: number
+  productos_bajo_stock: number
+  ventas_recientes: Array<{
+    id: number
+    fecha: string
+    total: number
+    usuario: string
+    items: number
+  }>
+  productos_bajo_stock_lista: Array<{
+    id: number
+    nombre: string
+    stock_actual: number
+    stock_minimo: number
+  }>
+}
+
+export default function DashboardPage() {
+  const { user, isLoading: authLoading, hasPermission } = useAuth()
+  const router = useRouter()
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login")
+    }
+  }, [user, authLoading, router])
+
+  useEffect(() => {
+    if (user) {
+      loadDashboardData()
+    }
+  }, [user])
+
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      const response = await api.getDashboard()
+      if (response.success && response.data) {
+        setData(response.data)
+      } else {
+        setError(response.message || "Error al cargar datos")
+      }
+    } catch (err) {
+      setError("Error al cargar el dashboard")
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (authLoading || isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Cargando dashboard...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Error</CardTitle>
+            <CardDescription>{error}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={loadDashboardData}>Reintentar</Button>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    )
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">Bienvenido, {user?.nombre}</p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <MetricCard
+            title="Ventas Hoy"
+            value={`$${data?.ventas_hoy.toLocaleString() || 0}`}
+            icon={DollarSign}
+            description="Total de ventas del día"
+          />
+          <MetricCard
+            title="Ventas del Mes"
+            value={`$${data?.ventas_mes.toLocaleString() || 0}`}
+            icon={TrendingUp}
+            description="Acumulado mensual"
+          />
+          <MetricCard
+            title="Productos"
+            value={data?.productos_total || 0}
+            icon={Package}
+            description="Total en inventario"
+          />
+          <MetricCard
+            title="Stock Bajo"
+            value={data?.productos_bajo_stock || 0}
+            icon={AlertCircle}
+            description="Productos con stock mínimo"
+            variant={data?.productos_bajo_stock ? "warning" : "default"}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <RecentSales sales={data?.ventas_recientes || []} />
+          <LowStockAlert products={data?.productos_bajo_stock_lista || []} />
+        </div>
+
+        {hasPermission("dashboard.completo") && (
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Acciones Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button className="w-full" onClick={() => router.push("/ventas/nueva")}>
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Nueva Venta
+                </Button>
+                <Button
+                  className="w-full bg-transparent"
+                  variant="outline"
+                  onClick={() => router.push("/productos/nuevo")}
+                >
+                  <Package className="mr-2 h-4 w-4" />
+                  Agregar Producto
+                </Button>
+                {hasPermission("usuarios.ver") && (
+                  <Button className="w-full bg-transparent" variant="outline" onClick={() => router.push("/usuarios")}>
+                    <Users className="mr-2 h-4 w-4" />
+                    Gestionar Usuarios
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  )
+}
