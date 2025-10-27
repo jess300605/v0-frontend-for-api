@@ -55,14 +55,13 @@ export default function ProductosPage() {
       console.log("[v0] Respuesta completa:", response)
 
       if (response.success && response.data) {
-        // La API devuelve { success: true, data: { productos: [...], paginacion: {...} } }
         const productosData = (response.data as any).productos || response.data
         console.log("[v0] Productos extraídos:", productosData)
 
         if (Array.isArray(productosData)) {
-          const activos = productosData.filter((p) => p.activo && p.stock_actual > 0)
-          setProductos(activos)
-          setFilteredProductos(activos)
+          setProductos(productosData)
+          setFilteredProductos(productosData)
+          console.log("[v0] Total productos cargados:", productosData.length)
         } else {
           console.error("[v0] Los datos de productos no son un array:", productosData)
           setProductos([])
