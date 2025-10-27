@@ -166,7 +166,11 @@ class ApiClient {
 
   async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const url = `${API_BASE_URL}${endpoint}`
+      console.log(`[v0] Making request to: ${url}`)
+      console.log(`[v0] Method: ${options.method || "GET"}`)
+
+      const response = await fetch(url, {
         ...options,
         headers: {
           ...this.getHeaders(),
@@ -174,7 +178,33 @@ class ApiClient {
         },
       })
 
-      const data = await response.json()
+      console.log(`[v0] Response status: ${response.status} ${response.statusText}`)
+      console.log(`[v0] Response headers:`, Object.fromEntries(response.headers.entries()))
+
+      const contentType = response.headers.get("content-type")
+      const hasJsonContent = contentType && contentType.includes("application/json")
+
+      let data: any = {}
+
+      if (hasJsonContent) {
+        const text = await response.text()
+        console.log(`[v0] Response text:`, text)
+
+        if (text) {
+          try {
+            data = JSON.parse(text)
+          } catch (e) {
+            console.error("[v0] Failed to parse JSON:", e)
+            data = { success: false, message: "Invalid JSON response" }
+          }
+        }
+      } else {
+        console.log("[v0] Response is not JSON, content-type:", contentType)
+        const text = await response.text()
+        console.log("[v0] Response text:", text)
+        data = { success: false, message: `Non-JSON response: ${text}` }
+      }
+
       console.log(`[v0] API ${endpoint}:`, data)
 
       if (!response.ok) {
@@ -186,7 +216,7 @@ class ApiClient {
             .join("\n")
           throw new Error(`Errores de validación:\n${errorMessages}`)
         }
-        throw new Error(data.message || "Error en la petición")
+        throw new Error(data.message || `Error ${response.status}: ${response.statusText}`)
       }
 
       return data

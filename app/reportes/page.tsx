@@ -31,19 +31,40 @@ export default function ReportesPage() {
   const loadReportes = async () => {
     try {
       setIsLoading(true)
-      const [ventasResponse, productosResponse] = await Promise.all([api.getReporteVentas(), api.getReporteProductos()])
 
-      console.log("[v0] Ventas Response completo:", ventasResponse)
-      console.log("[v0] Productos Response completo:", productosResponse)
+      console.log("[v0] Loading reportes...")
 
-      if (ventasResponse.success && ventasResponse.data) {
-        console.log("[v0] Setting reporte ventas:", ventasResponse.data)
-        setReporteVentas(ventasResponse.data)
+      let ventasResponse
+      let productosResponse
+
+      try {
+        console.log("[v0] Fetching ventas report...")
+        ventasResponse = await api.getReporteVentas()
+        console.log("[v0] Ventas Response completo:", ventasResponse)
+      } catch (error) {
+        console.error("[v0] Error loading ventas report:", error)
       }
 
-      if (productosResponse.success && productosResponse.data) {
+      try {
+        console.log("[v0] Fetching productos report...")
+        productosResponse = await api.getReporteProductos()
+        console.log("[v0] Productos Response completo:", productosResponse)
+      } catch (error) {
+        console.error("[v0] Error loading productos report:", error)
+      }
+
+      if (ventasResponse?.success && ventasResponse.data) {
+        console.log("[v0] Setting reporte ventas:", ventasResponse.data)
+        setReporteVentas(ventasResponse.data)
+      } else {
+        console.log("[v0] No ventas data available")
+      }
+
+      if (productosResponse?.success && productosResponse.data) {
         console.log("[v0] Setting reporte productos:", productosResponse.data)
         setReporteProductos(productosResponse.data)
+      } else {
+        console.log("[v0] No productos data available")
       }
     } catch (error) {
       console.error("[v0] Error al cargar reportes:", error)
