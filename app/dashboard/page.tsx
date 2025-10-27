@@ -108,13 +108,14 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Ventas Hoy"
-            value={`$${data?.ventas_hoy.toLocaleString() || 0}`}
+          value={`$${(data?.ventas_hoy ?? 0).toLocaleString()}`}
+
             icon={DollarSign}
             description="Total de ventas del día"
           />
           <MetricCard
             title="Ventas del Mes"
-            value={`$${data?.ventas_mes.toLocaleString() || 0}`}
+            value={`$${(data?.ventas_mes ?? 0).toLocaleString()}`}
             icon={TrendingUp}
             description="Acumulado mensual"
           />

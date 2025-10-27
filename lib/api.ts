@@ -173,9 +173,11 @@ class ApiClient {
 
       const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.message || "Error en la petición")
-      }
+    if (!response.ok) {
+  console.log("RAW RESPONSE:", data)
+  throw new Error(data.message || "Error en la petición")
+}
+
 
       return data
     } catch (error) {
@@ -186,7 +188,7 @@ class ApiClient {
 
   // Auth endpoints
   async login(email: string, contraseña: string): Promise<ApiResponse<AuthData>> {
-    return this.request<AuthData>("/login", {
+    return this.request<AuthData>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, contraseña }),
     })

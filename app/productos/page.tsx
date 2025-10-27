@@ -166,41 +166,44 @@ export default function ProductosPage() {
                       )}
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
-                    {filteredProductos.map((producto) => (
-                      <TableRow key={producto.id}>
-                        <TableCell className="font-mono text-sm">{producto.codigo}</TableCell>
-                        <TableCell className="font-medium">{producto.nombre}</TableCell>
-                        <TableCell>{producto.categoria}</TableCell>
-                        <TableCell className="text-right">${producto.precio.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">
-                          {producto.stock_actual} / {producto.stock_minimo}
-                        </TableCell>
-                        <TableCell>{getStockBadge(producto)}</TableCell>
-                        {(hasPermission("productos.editar") || hasPermission("productos.eliminar")) && (
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              {hasPermission("productos.editar") && (
-                                <Button variant="ghost" size="icon" onClick={() => handleEdit(producto)}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {hasPermission("productos.eliminar") && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDelete(producto)}
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
+                 <TableBody>
+  {(filteredProductos ?? []).map((producto) => (
+    <TableRow key={producto.id}>
+      <TableCell className="font-mono text-sm">{producto.codigo ?? "-"}</TableCell>
+      <TableCell className="font-medium">{producto.nombre ?? "-"}</TableCell>
+      <TableCell>{producto.categoria ?? "-"}</TableCell>
+      <TableCell className="text-right">
+        ${producto.precio?.toLocaleString() ?? "0"}
+      </TableCell>
+      <TableCell className="text-right">
+        {producto.stock_actual ?? 0} / {producto.stock_minimo ?? 0}
+      </TableCell>
+      <TableCell>{getStockBadge(producto)}</TableCell>
+      {(hasPermission("productos.editar") || hasPermission("productos.eliminar")) && (
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-2">
+            {hasPermission("productos.editar") && (
+              <Button variant="ghost" size="icon" onClick={() => handleEdit(producto)}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+            {hasPermission("productos.eliminar") && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDelete(producto)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      )}
+    </TableRow>
+  ))}
+</TableBody>
+
                 </Table>
               </div>
             )}
