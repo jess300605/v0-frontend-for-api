@@ -40,13 +40,13 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
   useEffect(() => {
     if (product) {
       setFormData({
-        codigo: product.codigo,
-        nombre: product.nombre,
+        codigo: product.codigo || "",
+        nombre: product.nombre || "",
         descripcion: product.descripcion || "",
-        categoria: product.categoria,
-        precio: product.precio.toString(),
-        stock_actual: product.stock_actual.toString(),
-        stock_minimo: product.stock_minimo.toString(),
+        categoria: product.categoria || "",
+        precio: product.precio?.toString() || "0",
+        stock_actual: product.stock_actual?.toString() || "0",
+        stock_minimo: product.stock_minimo?.toString() || "0",
       })
     } else {
       setFormData({
