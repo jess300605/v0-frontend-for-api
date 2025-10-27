@@ -85,48 +85,63 @@ export interface VentaInput {
 }
 
 export interface ReporteVentas {
-  total_ventas: number
-  total_transacciones: number
-  ticket_promedio: number
-  productos_vendidos: number
-  ventas_por_dia: Array<{
-    fecha: string
-    total: number
-    cantidad: number
-  }>
-  productos_mas_vendidos: Array<{
-    producto_id: number
-    producto_nombre: string
-    total_vendido: number
-    ingresos: number
-  }>
-  ventas_por_usuario: Array<{
-    usuario_id: number
-    usuario_nombre: string
+  periodo: {
+    fecha_inicio: string
+    fecha_fin: string
+    dias: number
+  }
+  resumen: {
     total_ventas: number
     monto_total: number
-    promedio: number
+    promedio_venta: number
+    crecimiento_ventas: number
+    crecimiento_monto: number
+  }
+  grafico_ventas: Array<{
+    periodo: string
+    fecha: string
+    cantidad: number
+    monto: number
+  }>
+  top_productos: Array<{
+    id_producto: number
+    total_vendido: number
+    ingresos: number
+    producto: {
+      nombre: string
+      precio: number
+    }
   }>
 }
 
 export interface ReporteProductos {
-  total_productos: number
-  valor_total_inventario: number
-  productos_bajo_stock: number
-  productos_sin_stock: number
-  productos_por_categoria: Array<{
-    categoria: string
-    total_productos: number
-    stock_total: number
-    valor_total: number
+  periodo: {
+    tipo: string
+    fecha_inicio: string
+    fecha_fin: string
+  }
+  productos: Array<{
+    producto: {
+      id: number
+      nombre: string
+      categoria: string
+      stock: number
+      precio: number
+    }
+    estadisticas: {
+      total_vendido: number
+      veces_comprado: number
+      ingresos_generados: number
+      precio_promedio: number
+      porcentaje_ingresos: number
+      porcentaje_cantidad: number
+    }
   }>
-  productos_mas_vendidos: Array<{
-    producto_id: number
-    producto_nombre: string
-    categoria: string
-    total_vendido: number
-    ingresos: number
-  }>
+  totales: {
+    productos_analizados: number
+    ingresos_totales: number
+    unidades_totales: number
+  }
 }
 
 class ApiClient {

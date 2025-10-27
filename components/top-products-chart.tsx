@@ -6,16 +6,19 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 
 interface TopProductsChartProps {
   data: Array<{
-    producto_id: number
-    producto_nombre: string
+    id_producto: number
     total_vendido: number
     ingresos: number
+    producto: {
+      nombre: string
+      precio: number
+    }
   }>
 }
 
 export function TopProductsChart({ data }: TopProductsChartProps) {
   const chartData = data.slice(0, 5).map((item) => ({
-    name: item.producto_nombre.length > 20 ? item.producto_nombre.substring(0, 20) + "..." : item.producto_nombre,
+    name: item.producto.nombre.length > 20 ? item.producto.nombre.substring(0, 20) + "..." : item.producto.nombre,
     cantidad: item.total_vendido,
   }))
 

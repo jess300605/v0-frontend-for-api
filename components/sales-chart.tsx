@@ -6,16 +6,17 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 
 interface SalesChartProps {
   data: Array<{
+    periodo: string
     fecha: string
-    total: number
     cantidad: number
+    monto: number
   }>
 }
 
 export function SalesChart({ data }: SalesChartProps) {
   const chartData = data.map((item) => ({
-    date: new Date(item.fecha).toLocaleDateString("es-ES", { day: "2-digit", month: "short" }),
-    ventas: item.total,
+    date: item.periodo,
+    ventas: item.monto,
   }))
 
   return (
