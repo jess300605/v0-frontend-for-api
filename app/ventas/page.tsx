@@ -37,6 +37,7 @@ export default function VentasPage() {
     const filtered = ventas.filter(
       (v) =>
         v.id.toString().includes(searchTerm) ||
+        v.nombre_cliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         v.usuario_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         v.estado.toLowerCase().includes(searchTerm.toLowerCase()),
     )
@@ -143,7 +144,7 @@ export default function VentasPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por ID, usuario o estado..."
+                  placeholder="Buscar por ID, cliente, vendedor o estado..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -169,7 +170,8 @@ export default function VentasPage() {
                     <TableRow>
                       <TableHead>ID</TableHead>
                       <TableHead>Fecha</TableHead>
-                      <TableHead>Usuario</TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Vendedor</TableHead>
                       <TableHead className="text-right">Total</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
@@ -180,7 +182,8 @@ export default function VentasPage() {
                       <TableRow key={venta.id}>
                         <TableCell className="font-mono">#{venta.id}</TableCell>
                         <TableCell>{format(new Date(venta.created_at), "dd/MM/yyyy HH:mm", { locale: es })}</TableCell>
-                        <TableCell>{venta.usuario_nombre || "N/A"}</TableCell>
+                        <TableCell className="font-medium">{venta.nombre_cliente || "N/A"}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{venta.usuario_nombre || "N/A"}</TableCell>
                         <TableCell className="text-right font-medium">${venta.total.toLocaleString()}</TableCell>
                         <TableCell>{getEstadoBadge(venta.estado)}</TableCell>
                         <TableCell className="text-right">
