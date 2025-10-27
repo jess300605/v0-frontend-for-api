@@ -69,14 +69,36 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     setIsLoading(true)
 
     try {
+      const precio = Number.parseFloat(formData.precio)
+      const stock = Number.parseInt(formData.stock_actual)
+      const stock_minimo = Number.parseInt(formData.stock_minimo)
+
+      if (isNaN(precio) || precio < 0) {
+        setError("El precio debe ser un número válido mayor o igual a 0")
+        setIsLoading(false)
+        return
+      }
+
+      if (isNaN(stock) || stock < 0) {
+        setError("El stock debe ser un número válido mayor o igual a 0")
+        setIsLoading(false)
+        return
+      }
+
+      if (isNaN(stock_minimo) || stock_minimo < 0) {
+        setError("El stock mínimo debe ser un número válido mayor o igual a 0")
+        setIsLoading(false)
+        return
+      }
+
       const data = {
-        codigo_sku: formData.codigo,
-        nombre: formData.nombre,
-        descripcion: formData.descripcion || undefined,
-        categoria: formData.categoria,
-        precio: Number.parseFloat(formData.precio),
-        stock: Number.parseInt(formData.stock_actual),
-        stock_minimo: Number.parseInt(formData.stock_minimo),
+        codigo_sku: formData.codigo.trim(),
+        nombre: formData.nombre.trim(),
+        descripcion: formData.descripcion.trim() || undefined,
+        categoria: formData.categoria.trim(),
+        precio: precio,
+        stock: stock,
+        stock_minimo: stock_minimo,
       }
 
       console.log("[v0] Form data before submit:", formData)

@@ -179,6 +179,13 @@ class ApiClient {
 
       if (!response.ok) {
         console.error("[v0] Error en respuesta:", data)
+        if (data.errors) {
+          console.error("[v0] Validation errors:", data.errors)
+          const errorMessages = Object.entries(data.errors)
+            .map(([field, messages]) => `${field}: ${(messages as string[]).join(", ")}`)
+            .join("\n")
+          throw new Error(`Errores de validación:\n${errorMessages}`)
+        }
         throw new Error(data.message || "Error en la petición")
       }
 
@@ -231,6 +238,14 @@ class ApiClient {
   async updateProducto(id: number, data: ProductoInput): Promise<ApiResponse<Producto>> {
     console.log("[v0] Updating product ID:", id)
     console.log("[v0] Update payload:", JSON.stringify(data, null, 2))
+    console.log("[v0] Field types:", {
+      codigo_sku: typeof data.codigo_sku,
+      nombre: typeof data.nombre,
+      categoria: typeof data.categoria,
+      precio: typeof data.precio,
+      stock: typeof data.stock,
+      stock_minimo: typeof data.stock_minimo,
+    })
 
     const response = await this.request<Producto>(`/productos/${id}`, {
       method: "PUT",

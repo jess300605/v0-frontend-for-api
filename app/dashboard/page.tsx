@@ -57,17 +57,19 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true)
+      setError("")
       const response = await api.getDashboard()
       console.log("[v0] Dashboard response:", response)
       if (response.success && response.data) {
         console.log("[v0] Dashboard data:", response.data)
-        setData(response.data)
+        const dashboardData = response.data as any
+        setData(dashboardData)
       } else {
         setError(response.message || "Error al cargar datos")
       }
     } catch (err) {
       setError("Error al cargar el dashboard")
-      console.error(err)
+      console.error("[v0] Dashboard error:", err)
     } finally {
       setIsLoading(false)
     }
@@ -105,9 +107,14 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Bienvenido, {user?.nombre}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">Bienvenido, {user?.nombre}</p>
+          </div>
+          <Button variant="outline" onClick={loadDashboardData} disabled={isLoading}>
+            {isLoading ? "Actualizando..." : "Actualizar"}
+          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -119,7 +126,7 @@ export default function DashboardPage() {
           />
           <MetricCard
             title="Monto Hoy"
-            value={`$${(data?.metricas_principales?.monto_hoy ?? 0).toLocaleString()}`}
+            value={`$${(data?.metricas_principales?.monto_hoy ?? 0).toFixed(2)}`}
             icon={DollarSign}
             description="Total de ventas del día"
           />
@@ -134,7 +141,7 @@ export default function DashboardPage() {
             value={data?.metricas_principales?.productos_stock_bajo || 0}
             icon={AlertCircle}
             description="Productos con stock mínimo"
-            variant={data?.metricas_principales?.productos_stock_bajo ? "warning" : "default"}
+            variant={(data?.metricas_principales?.productos_stock_bajo ?? 0) > 0 ? "warning" : "default"}
           />
         </div>
 
