@@ -16,6 +16,8 @@ interface SaleDetailDialogProps {
 export function SaleDetailDialog({ open, onClose, venta }: SaleDetailDialogProps) {
   if (!venta) return null
 
+  const fechaVenta = venta.fecha || venta.created_at
+
   const getEstadoBadge = (estado: string) => {
     switch (estado) {
       case "completada":
@@ -40,10 +42,18 @@ export function SaleDetailDialog({ open, onClose, venta }: SaleDetailDialogProps
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Fecha</p>
-              <p className="font-medium">{format(new Date(venta.fecha), "dd/MM/yyyy HH:mm", { locale: es })}</p>
+              <p className="font-medium">
+                {fechaVenta ? format(new Date(fechaVenta), "dd/MM/yyyy HH:mm", { locale: es }) : "N/A"}
+              </p>
             </div>
+            {venta.nombre_cliente && (
+              <div>
+                <p className="text-sm text-muted-foreground">Cliente</p>
+                <p className="font-medium">{venta.nombre_cliente}</p>
+              </div>
+            )}
             <div>
-              <p className="text-sm text-muted-foreground">Usuario</p>
+              <p className="text-sm text-muted-foreground">Vendedor</p>
               <p className="font-medium">{venta.usuario_nombre || "N/A"}</p>
             </div>
             <div>
@@ -56,36 +66,44 @@ export function SaleDetailDialog({ open, onClose, venta }: SaleDetailDialogProps
             </div>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-3">Productos</h3>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Producto</TableHead>
-                    <TableHead className="text-right">Precio Unit.</TableHead>
-                    <TableHead className="text-center">Cantidad</TableHead>
-                    <TableHead className="text-right">Subtotal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {venta.detalles?.map((detalle, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{detalle.producto_nombre}</p>
-                          <p className="text-sm text-muted-foreground">{detalle.producto_codigo}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">${detalle.precio_unitario.toLocaleString()}</TableCell>
-                      <TableCell className="text-center">{detalle.cantidad}</TableCell>
-                      <TableCell className="text-right font-medium">${detalle.subtotal.toLocaleString()}</TableCell>
+          {venta.detalles && venta.detalles.length > 0 ? (
+            <div>
+              <h3 className="font-semibold mb-3">Productos</h3>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Producto</TableHead>
+                      <TableHead className="text-right">Precio Unit.</TableHead>
+                      <TableHead className="text-center">Cantidad</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {venta.detalles.map((detalle, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{detalle.producto_nombre}</p>
+                            {detalle.producto_codigo && (
+                              <p className="text-sm text-muted-foreground">{detalle.producto_codigo}</p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">${detalle.precio_unitario.toLocaleString()}</TableCell>
+                        <TableCell className="text-center">{detalle.cantidad}</TableCell>
+                        <TableCell className="text-right font-medium">${detalle.subtotal.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No hay detalles de productos disponibles</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

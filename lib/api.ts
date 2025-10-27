@@ -60,9 +60,14 @@ export interface ProductoInput {
 export interface Venta {
   id: number
   fecha: string
+  created_at: string
   total: number
   usuario_nombre: string
+  nombre_cliente?: string
+  email_cliente?: string
+  telefono_cliente?: string
   estado: string
+  detalles?: VentaDetalle[]
 }
 
 export interface VentaDetalle {
@@ -298,7 +303,21 @@ class ApiClient {
   }
 
   async getVenta(id: number): Promise<ApiResponse<Venta>> {
-    return this.request<Venta>(`/ventas/${id}`)
+    console.log(`[v0] Fetching venta details for ID: ${id}`)
+    const response = await this.request<any>(`/ventas/${id}`)
+    console.log(`[v0] Venta detail response:`, response)
+
+    // Handle nested structure: { success: true, data: { venta: {...} } }
+    if (response.success && response.data) {
+      const ventaData = response.data.venta || response.data
+      console.log(`[v0] Extracted venta data:`, ventaData)
+      return {
+        ...response,
+        data: ventaData,
+      }
+    }
+
+    return response
   }
 
   async createVenta(data: VentaInput): Promise<ApiResponse<Venta>> {
