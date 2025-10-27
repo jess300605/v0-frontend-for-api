@@ -103,7 +103,9 @@ export default function HomePage() {
                   <span className="ml-1 text-sm text-muted-foreground">(4.5)</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-emerald-600">${producto.precio.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-emerald-600">
+                    ${Number(producto.precio || 0).toFixed(2)}
+                  </span>
                   <Button size="sm" className="gap-2">
                     <ShoppingCart className="h-4 w-4" />
                     Agregar
