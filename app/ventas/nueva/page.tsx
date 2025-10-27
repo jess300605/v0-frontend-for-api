@@ -38,27 +38,40 @@ export default function NuevaVentaPage() {
   }, [hasPermission, router])
 
   const loadProductos = async () => {
-  try {
-    const response = await api.getProductos()
-    console.log("RESPONSE GET PRODUCTOS ===>", response)
+    try {
+      const response = await api.getProductos()
+      console.log("[v0] Nueva venta - Response completo:", response)
+      console.log("[v0] Nueva venta - response.data:", response.data)
 
-    if (response.success && Array.isArray(response.data)) {
-      setProductos(response.data.filter(p => p.activo && p.stock_actual > 0))
-    } else {
-      console.warn("response.data NO es array", response.data)
+      let productosData: Producto[] = []
+
+      if (response.success) {
+        if (response.data?.productos && Array.isArray(response.data.productos)) {
+          productosData = response.data.productos
+        } else if (Array.isArray(response.data)) {
+          productosData = response.data
+        }
+
+        console.log("[v0] Nueva venta - Productos extraídos:", productosData.length)
+
+        // Filter active products with stock
+        const productosDisponibles = productosData.filter((p) => p.activo && p.stock > 0)
+        console.log("[v0] Nueva venta - Productos disponibles:", productosDisponibles.length)
+
+        setProductos(productosDisponibles)
+      } else {
+        console.warn("[v0] Nueva venta - Response no exitoso:", response)
+      }
+    } catch (error) {
+      console.error("[v0] Error al cargar productos:", error)
     }
-    
-  } catch (error) {
-    console.error("Error al cargar productos:", error)
   }
-}
-
 
   const addToCart = (producto: Producto) => {
     const existingItem = cart.find((item) => item.producto.id === producto.id)
 
     if (existingItem) {
-      if (existingItem.cantidad >= producto.stock_actual) {
+      if (existingItem.cantidad >= producto.stock) {
         setError(`Stock insuficiente para ${producto.nombre}`)
         return
       }
@@ -96,7 +109,7 @@ export default function NuevaVentaPage() {
       return
     }
 
-    if (cantidad > item.producto.stock_actual) {
+    if (cantidad > item.producto.stock) {
       setError(`Stock insuficiente para ${item.producto.nombre}`)
       return
     }
@@ -200,7 +213,7 @@ export default function NuevaVentaPage() {
                                   <div>
                                     <p className="font-medium">{producto.nombre}</p>
                                     <p className="text-sm text-muted-foreground">
-                                      {producto.codigo} • Stock: {producto.stock_actual}
+                                      {producto.codigo_sku || producto.codigo || "Sin código"} • Stock: {producto.stock}
                                     </p>
                                   </div>
                                   <p className="font-medium">${producto.precio.toLocaleString()}</p>
@@ -236,7 +249,9 @@ export default function NuevaVentaPage() {
                               <TableCell>
                                 <div>
                                   <p className="font-medium">{item.producto.nombre}</p>
-                                  <p className="text-sm text-muted-foreground">{item.producto.codigo}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {item.producto.codigo_sku || item.producto.codigo || "Sin código"}
+                                  </p>
                                 </div>
                               </TableCell>
                               <TableCell className="text-right">${item.producto.precio.toLocaleString()}</TableCell>
@@ -253,7 +268,7 @@ export default function NuevaVentaPage() {
                                   <Input
                                     type="number"
                                     min="1"
-                                    max={item.producto.stock_actual}
+                                    max={item.producto.stock}
                                     value={item.cantidad}
                                     onChange={(e) => updateQuantity(item.producto.id, Number.parseInt(e.target.value))}
                                     className="w-16 text-center"
