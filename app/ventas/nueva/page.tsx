@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-import { DashboardLayout } from "@/components/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -186,220 +185,216 @@ export default function NuevaVentaPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Nueva Venta</h1>
-            <p className="text-muted-foreground">Procesa una nueva transacción</p>
-          </div>
-          <Button variant="outline" onClick={() => router.push("/ventas")}>
-            Cancelar
-          </Button>
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Nueva Venta</h1>
+          <p className="text-muted-foreground">Procesa una nueva transacción</p>
         </div>
+        <Button variant="outline" onClick={() => router.push("/ventas")}>
+          Cancelar
+        </Button>
+      </div>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Información del Cliente</CardTitle>
-                <CardDescription>Datos del comprador</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="nombre_cliente">
-                      Nombre del Cliente <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="nombre_cliente"
-                      placeholder="Nombre completo"
-                      value={nombreCliente}
-                      onChange={(e) => setNombreCliente(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email_cliente">Email (opcional)</Label>
-                    <Input
-                      id="email_cliente"
-                      type="email"
-                      placeholder="correo@ejemplo.com"
-                      value={emailCliente}
-                      onChange={(e) => setEmailCliente(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="telefono_cliente">Teléfono (opcional)</Label>
-                    <Input
-                      id="telefono_cliente"
-                      type="tel"
-                      placeholder="1234567890"
-                      value={telefonoCliente}
-                      onChange={(e) => setTelefonoCliente(e.target.value)}
-                    />
-                  </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Información del Cliente</CardTitle>
+              <CardDescription>Datos del comprador</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="nombre_cliente">
+                    Nombre del Cliente <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="nombre_cliente"
+                    placeholder="Nombre completo"
+                    value={nombreCliente}
+                    onChange={(e) => setNombreCliente(e.target.value)}
+                    required
+                  />
                 </div>
-              </CardContent>
-            </Card>
+                <div className="grid gap-2">
+                  <Label htmlFor="email_cliente">Email (opcional)</Label>
+                  <Input
+                    id="email_cliente"
+                    type="email"
+                    placeholder="correo@ejemplo.com"
+                    value={emailCliente}
+                    onChange={(e) => setEmailCliente(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="telefono_cliente">Teléfono (opcional)</Label>
+                  <Input
+                    id="telefono_cliente"
+                    type="tel"
+                    placeholder="1234567890"
+                    value={telefonoCliente}
+                    onChange={(e) => setTelefonoCliente(e.target.value)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Productos</CardTitle>
-                <CardDescription>Agrega productos a la venta</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start bg-transparent">
-                        <Search className="mr-2 h-4 w-4" />
-                        Buscar producto...
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[400px] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Buscar producto..." />
-                        <CommandList>
-                          <CommandEmpty>No se encontraron productos.</CommandEmpty>
-                          <CommandGroup>
-                            {productos.map((producto) => (
-                              <CommandItem key={producto.id} onSelect={() => addToCart(producto)}>
-                                <div className="flex items-center justify-between w-full">
-                                  <div>
-                                    <p className="font-medium">{producto.nombre}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {producto.codigo_sku || producto.codigo || "Sin código"} • Stock: {producto.stock}
-                                    </p>
-                                  </div>
-                                  <p className="font-medium">${producto.precio.toLocaleString()}</p>
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-
-                  {cart.length === 0 ? (
-                    <div className="text-center py-12 border rounded-lg">
-                      <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No hay productos en el carrito</p>
-                    </div>
-                  ) : (
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Producto</TableHead>
-                            <TableHead className="text-right">Precio</TableHead>
-                            <TableHead className="text-center">Cantidad</TableHead>
-                            <TableHead className="text-right">Subtotal</TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {cart.map((item) => (
-                            <TableRow key={item.producto.id}>
-                              <TableCell>
+          <Card>
+            <CardHeader>
+              <CardTitle>Productos</CardTitle>
+              <CardDescription>Agrega productos a la venta</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start bg-transparent">
+                      <Search className="mr-2 h-4 w-4" />
+                      Buscar producto...
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar producto..." />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron productos.</CommandEmpty>
+                        <CommandGroup>
+                          {productos.map((producto) => (
+                            <CommandItem key={producto.id} onSelect={() => addToCart(producto)}>
+                              <div className="flex items-center justify-between w-full">
                                 <div>
-                                  <p className="font-medium">{item.producto.nombre}</p>
+                                  <p className="font-medium">{producto.nombre}</p>
                                   <p className="text-sm text-muted-foreground">
-                                    {item.producto.codigo_sku || item.producto.codigo || "Sin código"}
+                                    {producto.codigo_sku || producto.codigo || "Sin código"} • Stock: {producto.stock}
                                   </p>
                                 </div>
-                              </TableCell>
-                              <TableCell className="text-right">${item.producto.precio.toLocaleString()}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center justify-center gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 bg-transparent"
-                                    onClick={() => updateQuantity(item.producto.id, item.cantidad - 1)}
-                                  >
-                                    -
-                                  </Button>
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    max={item.producto.stock}
-                                    value={item.cantidad}
-                                    onChange={(e) => updateQuantity(item.producto.id, Number.parseInt(e.target.value))}
-                                    className="w-16 text-center"
-                                  />
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 bg-transparent"
-                                    onClick={() => updateQuantity(item.producto.id, item.cantidad + 1)}
-                                  >
-                                    +
-                                  </Button>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right font-medium">
-                                ${item.subtotal.toLocaleString()}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => removeFromCart(item.producto.id)}
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
+                                <p className="font-medium">${producto.precio.toLocaleString()}</p>
+                              </div>
+                            </CommandItem>
                           ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
 
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumen</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Productos</span>
-                    <span>{cart.length}</span>
+                {cart.length === 0 ? (
+                  <div className="text-center py-12 border rounded-lg">
+                    <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No hay productos en el carrito</p>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Unidades</span>
-                    <span>{cart.reduce((sum, item) => sum + item.cantidad, 0)}</span>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Producto</TableHead>
+                          <TableHead className="text-right">Precio</TableHead>
+                          <TableHead className="text-center">Cantidad</TableHead>
+                          <TableHead className="text-right">Subtotal</TableHead>
+                          <TableHead className="w-[50px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {cart.map((item) => (
+                          <TableRow key={item.producto.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{item.producto.nombre}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {item.producto.codigo_sku || item.producto.codigo || "Sin código"}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">${item.producto.precio.toLocaleString()}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-transparent"
+                                  onClick={() => updateQuantity(item.producto.id, item.cantidad - 1)}
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  max={item.producto.stock}
+                                  value={item.cantidad}
+                                  onChange={(e) => updateQuantity(item.producto.id, Number.parseInt(e.target.value))}
+                                  className="w-16 text-center"
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 bg-transparent"
+                                  onClick={() => updateQuantity(item.producto.id, item.cantidad + 1)}
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right font-medium">${item.subtotal.toLocaleString()}</TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeFromCart(item.producto.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
-                  <div className="border-t pt-2 mt-2">
-                    <div className="flex justify-between">
-                      <span className="font-semibold">Total</span>
-                      <span className="text-2xl font-bold">${getTotal().toLocaleString()}</span>
-                    </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          <Card className="sticky top-6">
+            <CardHeader>
+              <CardTitle>Resumen</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Productos</span>
+                  <span>{cart.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Unidades</span>
+                  <span>{cart.reduce((sum, item) => sum + item.cantidad, 0)}</span>
+                </div>
+                <div className="border-t pt-2 mt-2">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Total</span>
+                    <span className="text-2xl font-bold text-primary">${getTotal().toLocaleString()}</span>
                   </div>
                 </div>
+              </div>
 
-                <Button className="w-full" onClick={handleSubmit} disabled={isLoading || cart.length === 0}>
-                  {isLoading ? "Procesando..." : "Procesar Venta"}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+              <Button className="w-full" onClick={handleSubmit} disabled={isLoading || cart.length === 0}>
+                {isLoading ? "Procesando..." : "Procesar Venta"}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }

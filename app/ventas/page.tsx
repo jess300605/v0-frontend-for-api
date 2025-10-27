@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-import { DashboardLayout } from "@/components/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -51,7 +50,6 @@ export default function VentasPage() {
       console.log("[v0] Respuesta completa:", response)
 
       if (response.success && response.data) {
-        // La API devuelve { success: true, data: { ventas: [...], paginacion: {...} } }
         const ventasData = (response.data as any).ventas || response.data
         console.log("[v0] Ventas extraídas:", ventasData)
         if (Array.isArray(ventasData) && ventasData.length > 0) {
@@ -119,99 +117,97 @@ export default function VentasPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Ventas</h1>
-            <p className="text-muted-foreground">Gestiona las ventas y transacciones</p>
-          </div>
-          {hasPermission("ventas.crear") && (
-            <Button onClick={() => router.push("/ventas/nueva")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nueva Venta
-            </Button>
-          )}
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Ventas</h1>
+          <p className="text-muted-foreground">Gestiona las ventas y transacciones</p>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Historial de Ventas</CardTitle>
-            <CardDescription>
-              {filteredVentas.length} {filteredVentas.length === 1 ? "venta" : "ventas"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por ID, cliente o estado..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-4 text-muted-foreground">Cargando ventas...</p>
-              </div>
-            ) : filteredVentas.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  {searchTerm ? "No se encontraron ventas" : "No hay ventas registradas"}
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredVentas.map((venta) => (
-                      <TableRow key={venta.id}>
-                        <TableCell className="font-mono">#{venta.id}</TableCell>
-                        <TableCell>{format(new Date(venta.created_at), "dd/MM/yyyy HH:mm", { locale: es })}</TableCell>
-                        <TableCell className="font-medium">{venta.nombre_cliente || "N/A"}</TableCell>
-                        <TableCell className="text-right font-medium">${venta.total.toLocaleString()}</TableCell>
-                        <TableCell>{getEstadoBadge(venta.estado)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleViewDetail(venta)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {hasPermission("ventas.cancelar") && venta.estado === "completada" && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleCancelSale(venta.id)}
-                                className="text-destructive hover:text-destructive"
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {hasPermission("ventas.crear") && (
+          <Button onClick={() => router.push("/ventas/nueva")}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva Venta
+          </Button>
+        )}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Historial de Ventas</CardTitle>
+          <CardDescription>
+            {filteredVentas.length} {filteredVentas.length === 1 ? "venta" : "ventas"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por ID, cliente o estado..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Cargando ventas...</p>
+            </div>
+          ) : filteredVentas.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                {searchTerm ? "No se encontraron ventas" : "No hay ventas registradas"}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredVentas.map((venta) => (
+                    <TableRow key={venta.id}>
+                      <TableCell className="font-mono">#{venta.id}</TableCell>
+                      <TableCell>{format(new Date(venta.created_at), "dd/MM/yyyy HH:mm", { locale: es })}</TableCell>
+                      <TableCell className="font-medium">{venta.nombre_cliente || "N/A"}</TableCell>
+                      <TableCell className="text-right font-medium">${venta.total.toLocaleString()}</TableCell>
+                      <TableCell>{getEstadoBadge(venta.estado)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => handleViewDetail(venta)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {hasPermission("ventas.cancelar") && venta.estado === "completada" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleCancelSale(venta.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <SaleDetailDialog
         open={isDetailDialogOpen}
@@ -221,6 +217,6 @@ export default function VentasPage() {
         }}
         venta={selectedVenta}
       />
-    </DashboardLayout>
+    </div>
   )
 }
