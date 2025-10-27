@@ -48,12 +48,12 @@ export interface Producto {
 }
 
 export interface ProductoInput {
-  codigo: string
+  codigo_sku: string
   nombre: string
   descripcion?: string
   categoria: string
   precio: number
-  stock_actual: number
+  stock: number
   stock_minimo: number
 }
 

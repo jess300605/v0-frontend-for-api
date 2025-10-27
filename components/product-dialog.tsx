@@ -69,14 +69,16 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
 
     try {
       const data = {
-        codigo: formData.codigo,
+        codigo_sku: formData.codigo,
         nombre: formData.nombre,
         descripcion: formData.descripcion,
         categoria: formData.categoria,
         precio: Number.parseFloat(formData.precio),
-        stock_actual: Number.parseInt(formData.stock_actual),
+        stock: Number.parseInt(formData.stock_actual),
         stock_minimo: Number.parseInt(formData.stock_minimo),
       }
+
+      console.log("[v0] Sending product data:", data)
 
       const response = product ? await api.updateProducto(product.id, data) : await api.createProducto(data)
 
@@ -86,6 +88,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         setError(response.message || "Error al guardar el producto")
       }
     } catch (err) {
+      console.error("[v0] Error saving product:", err)
       setError(err instanceof Error ? err.message : "Error al guardar el producto")
     } finally {
       setIsLoading(false)
