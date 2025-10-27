@@ -34,14 +34,16 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     stock_actual: "",
     stock_minimo: "",
   })
+  const [originalCodigo, setOriginalCodigo] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
   useEffect(() => {
     if (product) {
       console.log("[v0] Editing product:", product)
+      const codigoValue = product.codigo_sku || ""
       setFormData({
-        codigo: product.codigo_sku || "",
+        codigo: codigoValue,
         nombre: product.nombre || "",
         descripcion: product.descripcion || "",
         categoria: product.categoria || "",
@@ -49,6 +51,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         stock_actual: product.stock?.toString() || "0",
         stock_minimo: product.stock_minimo?.toString() || "0",
       })
+      setOriginalCodigo(codigoValue)
     } else {
       setFormData({
         codigo: "",
@@ -59,6 +62,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         stock_actual: "",
         stock_minimo: "",
       })
+      setOriginalCodigo("")
     }
     setError("")
   }, [product, open])
@@ -91,8 +95,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         return
       }
 
-      const data = {
-        codigo_sku: formData.codigo.trim(),
+      const data: any = {
         nombre: formData.nombre.trim(),
         descripcion: formData.descripcion.trim() || undefined,
         categoria: formData.categoria.trim(),
@@ -101,9 +104,16 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         stock_minimo: stock_minimo,
       }
 
+      // Only send codigo_sku if it's a new product or if it has changed
+      const codigoTrimmed = formData.codigo.trim()
+      if (!product || codigoTrimmed !== originalCodigo) {
+        data.codigo_sku = codigoTrimmed
+      }
+
       console.log("[v0] Form data before submit:", formData)
       console.log("[v0] Sending product data:", data)
       console.log("[v0] Product ID:", product?.id)
+      console.log("[v0] Original codigo:", originalCodigo, "New codigo:", codigoTrimmed)
 
       const response = product ? await api.updateProducto(product.id, data) : await api.createProducto(data)
 
@@ -135,13 +145,13 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
             </Alert>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="codigo">Código *</Label>
+              <Label htmlFor="codigo">Código SKU *</Label>
               <Input
                 id="codigo"
                 value={formData.codigo}
@@ -150,6 +160,9 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
                 disabled={isLoading}
                 placeholder="SKU-001"
               />
+              {product && (
+                <p className="text-xs text-muted-foreground">Solo modifica el código si necesitas cambiarlo</p>
+              )}
             </div>
 
             <div className="space-y-2">
