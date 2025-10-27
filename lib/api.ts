@@ -24,8 +24,14 @@ export interface AuthData {
 }
 
 export interface DashboardData {
-  ventas_hoy: number
-  ventas_mes: number
+  ventas_hoy: {
+    total: number
+    cantidad: number
+  }
+  ventas_mes: {
+    total: number
+    cantidad: number
+  }
   productos_total: number
   productos_bajo_stock: number
   ventas_recientes: Array<{

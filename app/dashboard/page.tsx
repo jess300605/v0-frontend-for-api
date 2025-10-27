@@ -13,8 +13,14 @@ import { RecentSales } from "@/components/recent-sales"
 import { LowStockAlert } from "@/components/low-stock-alert"
 
 interface DashboardData {
-  ventas_hoy: number
-  ventas_mes: number
+  ventas_hoy: {
+    total: number
+    cantidad: number
+  }
+  ventas_mes: {
+    total: number
+    cantidad: number
+  }
   productos_total: number
   productos_bajo_stock: number
   ventas_recientes: Array<{
@@ -55,7 +61,9 @@ export default function DashboardPage() {
     try {
       setIsLoading(true)
       const response = await api.getDashboard()
+      console.log("[v0] Dashboard response:", response)
       if (response.success && response.data) {
+        console.log("[v0] Dashboard data:", response.data)
         setData(response.data)
       } else {
         setError(response.message || "Error al cargar datos")
@@ -108,14 +116,13 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Ventas Hoy"
-          value={`$${(data?.ventas_hoy ?? 0).toLocaleString()}`}
-
+            value={`$${(data?.ventas_hoy?.total ?? 0).toLocaleString()}`}
             icon={DollarSign}
             description="Total de ventas del día"
           />
           <MetricCard
             title="Ventas del Mes"
-            value={`$${(data?.ventas_mes ?? 0).toLocaleString()}`}
+            value={`$${(data?.ventas_mes?.total ?? 0).toLocaleString()}`}
             icon={TrendingUp}
             description="Acumulado mensual"
           />
