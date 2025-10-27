@@ -39,7 +39,7 @@ export default function ProductosPage() {
   useEffect(() => {
     const filtered = (Array.isArray(productos) ? productos : []).filter((p) => {
       const nombre = p.nombre?.toLowerCase() ?? ""
-      const codigo = p.codigo?.toLowerCase() ?? ""
+      const codigo = p.codigo_sku?.toLowerCase() ?? "" // Updated to use codigo_sku from API response
       const categoria = p.categoria?.toLowerCase() ?? ""
       const term = searchTerm.toLowerCase()
       return nombre.includes(term) || codigo.includes(term) || categoria.includes(term)
@@ -112,8 +112,8 @@ export default function ProductosPage() {
   }
 
   const getStockBadge = (producto: Producto) => {
-    if ((producto.stock_actual ?? 0) === 0) return <Badge variant="destructive">Sin stock</Badge>
-    if ((producto.stock_actual ?? 0) <= (producto.stock_minimo ?? 0))
+    if ((producto.stock ?? 0) === 0) return <Badge variant="destructive">Sin stock</Badge>
+    if ((producto.stock ?? 0) <= (producto.stock_minimo ?? 0))
       return <Badge className="bg-orange-500">Stock bajo</Badge>
     return <Badge variant="secondary">En stock</Badge>
   }
@@ -188,12 +188,12 @@ export default function ProductosPage() {
                   <TableBody>
                     {(Array.isArray(filteredProductos) ? filteredProductos : []).map((producto) => (
                       <TableRow key={producto.id}>
-                        <TableCell className="font-mono text-sm">{producto.codigo ?? "-"}</TableCell>
+                        <TableCell className="font-mono text-sm">{producto.codigo_sku ?? "-"}</TableCell>
                         <TableCell className="font-medium">{producto.nombre ?? "-"}</TableCell>
                         <TableCell>{producto.categoria ?? "-"}</TableCell>
                         <TableCell className="text-right">${Number(producto.precio ?? 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right">
-                          {Number(producto.stock_actual ?? 0)} / {Number(producto.stock_minimo ?? 0)}
+                          {Number(producto.stock ?? 0)} / {Number(producto.stock_minimo ?? 0)}
                         </TableCell>
                         <TableCell>{getStockBadge(producto)}</TableCell>
                         {(hasPermission("productos.editar") || hasPermission("productos.eliminar")) && (

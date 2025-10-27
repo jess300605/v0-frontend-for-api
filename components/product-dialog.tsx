@@ -39,13 +39,14 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
 
   useEffect(() => {
     if (product) {
+      console.log("[v0] Editing product:", product)
       setFormData({
-        codigo: product.codigo || "",
+        codigo: product.codigo_sku || "",
         nombre: product.nombre || "",
         descripcion: product.descripcion || "",
         categoria: product.categoria || "",
         precio: product.precio?.toString() || "0",
-        stock_actual: product.stock_actual?.toString() || "0",
+        stock_actual: product.stock?.toString() || "0",
         stock_minimo: product.stock_minimo?.toString() || "0",
       })
     } else {
@@ -71,16 +72,20 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
       const data = {
         codigo_sku: formData.codigo,
         nombre: formData.nombre,
-        descripcion: formData.descripcion,
+        descripcion: formData.descripcion || undefined,
         categoria: formData.categoria,
         precio: Number.parseFloat(formData.precio),
         stock: Number.parseInt(formData.stock_actual),
         stock_minimo: Number.parseInt(formData.stock_minimo),
       }
 
+      console.log("[v0] Form data before submit:", formData)
       console.log("[v0] Sending product data:", data)
+      console.log("[v0] Product ID:", product?.id)
 
       const response = product ? await api.updateProducto(product.id, data) : await api.createProducto(data)
+
+      console.log("[v0] Response received:", response)
 
       if (response.success) {
         onClose(true)

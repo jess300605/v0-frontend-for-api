@@ -35,12 +35,12 @@ export interface DashboardData {
 
 export interface Producto {
   id: number
-  codigo: string
+  codigo_sku: string
   nombre: string
   descripcion: string | null
   categoria: string
   precio: number
-  stock_actual: number
+  stock: number
   stock_minimo: number
   activo: boolean
   created_at?: string
@@ -214,10 +214,16 @@ class ApiClient {
   }
 
   async updateProducto(id: number, data: ProductoInput): Promise<ApiResponse<Producto>> {
-    return this.request<Producto>(`/productos/${id}`, {
+    console.log("[v0] Updating product ID:", id)
+    console.log("[v0] Update payload:", JSON.stringify(data, null, 2))
+
+    const response = await this.request<Producto>(`/productos/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     })
+
+    console.log("[v0] Update response:", response)
+    return response
   }
 
   async deleteProducto(id: number): Promise<ApiResponse> {
