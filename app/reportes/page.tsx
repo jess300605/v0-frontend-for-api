@@ -34,15 +34,26 @@ export default function ReportesPage() {
       setIsLoading(true)
       const [ventasResponse, productosResponse] = await Promise.all([api.getReporteVentas(), api.getReporteProductos()])
 
+      console.log("[v0] Ventas Response completo:", ventasResponse)
+      console.log("[v0] Ventas Response.data:", ventasResponse.data)
+      console.log("[v0] Productos Response completo:", productosResponse)
+      console.log("[v0] Productos Response.data:", productosResponse.data)
+
       if (ventasResponse.success && ventasResponse.data) {
+        console.log("[v0] Setting reporte ventas:", ventasResponse.data)
         setReporteVentas(ventasResponse.data)
+      } else {
+        console.error("[v0] No se pudo cargar reporte de ventas:", ventasResponse)
       }
 
       if (productosResponse.success && productosResponse.data) {
+        console.log("[v0] Setting reporte productos:", productosResponse.data)
         setReporteProductos(productosResponse.data)
+      } else {
+        console.error("[v0] No se pudo cargar reporte de productos:", productosResponse)
       }
     } catch (error) {
-      console.error("Error al cargar reportes:", error)
+      console.error("[v0] Error al cargar reportes:", error)
     } finally {
       setIsLoading(false)
     }
