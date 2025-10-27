@@ -69,13 +69,13 @@ export interface ProductoInput {
 
 export interface Venta {
   id: number
-  usuario_id: number
-  usuario_nombre?: string
   fecha: string
   total: number
-  estado: "completada" | "cancelada" | "pendiente"
-  detalles?: VentaDetalle[]
+  usuario_nombre: string
+  estado: string
+
 }
+
 
 export interface VentaDetalle {
   id: number

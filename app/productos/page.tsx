@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function ProductosPage() {
-  const { user, hasPermission } = useAuth()
+  const { hasPermission } = useAuth()
   const router = useRouter()
   const [productos, setProductos] = useState<Producto[]>([])
   const [filteredProductos, setFilteredProductos] = useState<Producto[]>([])
@@ -26,6 +26,7 @@ export default function ProductosPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Producto | null>(null)
 
+  // Verificar permisos y cargar productos
   useEffect(() => {
     if (!hasPermission("productos.ver")) {
       router.push("/dashboard")
@@ -34,26 +35,35 @@ export default function ProductosPage() {
     }
   }, [hasPermission, router])
 
+  // Filtrado seguro de productos
   useEffect(() => {
-    const filtered = productos.filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
+    const filtered = (Array.isArray(productos) ? productos : []).filter((p) => {
+      const nombre = p.nombre?.toLowerCase() ?? ""
+      const codigo = p.codigo?.toLowerCase() ?? ""
+      const categoria = p.categoria?.toLowerCase() ?? ""
+      const term = searchTerm.toLowerCase()
+      return nombre.includes(term) || codigo.includes(term) || categoria.includes(term)
+    })
     setFilteredProductos(filtered)
   }, [searchTerm, productos])
 
+  // Cargar productos desde la API
   const loadProductos = async () => {
     try {
       setIsLoading(true)
       const response = await api.getProductos()
-      if (response.success && response.data) {
-        setProductos(response.data)
-        setFilteredProductos(response.data)
+      if (response.success && Array.isArray(response.data)) {
+        const activos = response.data.filter((p) => p.activo && p.stock_actual > 0)
+        setProductos(activos)
+        setFilteredProductos(activos)
+      } else {
+        setProductos([])
+        setFilteredProductos([])
       }
     } catch (error) {
       console.error("Error al cargar productos:", error)
+      setProductos([])
+      setFilteredProductos([])
     } finally {
       setIsLoading(false)
     }
@@ -71,7 +81,6 @@ export default function ProductosPage() {
 
   const confirmDelete = async () => {
     if (!productToDelete) return
-
     try {
       const response = await api.deleteProducto(productToDelete.id)
       if (response.success) {
@@ -87,24 +96,19 @@ export default function ProductosPage() {
   const handleDialogClose = (refresh: boolean) => {
     setIsDialogOpen(false)
     setSelectedProduct(null)
-    if (refresh) {
-      loadProductos()
-    }
+    if (refresh) loadProductos()
   }
 
   const getStockBadge = (producto: Producto) => {
-    if (producto.stock_actual === 0) {
-      return <Badge variant="destructive">Sin stock</Badge>
-    }
-    if (producto.stock_actual <= producto.stock_minimo) {
-      return <Badge className="bg-orange-500">Stock bajo</Badge>
-    }
+    if ((producto.stock_actual ?? 0) === 0) return <Badge variant="destructive">Sin stock</Badge>
+    if ((producto.stock_actual ?? 0) <= (producto.stock_minimo ?? 0)) return <Badge className="bg-orange-500">Stock bajo</Badge>
     return <Badge variant="secondary">En stock</Badge>
   }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Encabezado */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
@@ -118,6 +122,7 @@ export default function ProductosPage() {
           )}
         </div>
 
+        {/* Tarjeta de inventario */}
         <Card>
           <CardHeader>
             <CardTitle>Inventario</CardTitle>
@@ -126,18 +131,18 @@ export default function ProductosPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre, código o categoría..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+            {/* Buscador */}
+            <div className="mb-4 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre, código o categoría..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
 
+            {/* Cargando o sin productos */}
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
@@ -166,44 +171,44 @@ export default function ProductosPage() {
                       )}
                     </TableRow>
                   </TableHeader>
-                 <TableBody>
-  {(filteredProductos ?? []).map((producto) => (
-    <TableRow key={producto.id}>
-      <TableCell className="font-mono text-sm">{producto.codigo ?? "-"}</TableCell>
-      <TableCell className="font-medium">{producto.nombre ?? "-"}</TableCell>
-      <TableCell>{producto.categoria ?? "-"}</TableCell>
-      <TableCell className="text-right">
-        ${producto.precio?.toLocaleString() ?? "0"}
-      </TableCell>
-      <TableCell className="text-right">
-        {producto.stock_actual ?? 0} / {producto.stock_minimo ?? 0}
-      </TableCell>
-      <TableCell>{getStockBadge(producto)}</TableCell>
-      {(hasPermission("productos.editar") || hasPermission("productos.eliminar")) && (
-        <TableCell className="text-right">
-          <div className="flex justify-end gap-2">
-            {hasPermission("productos.editar") && (
-              <Button variant="ghost" size="icon" onClick={() => handleEdit(producto)}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-            )}
-            {hasPermission("productos.eliminar") && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleDelete(producto)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </TableCell>
-      )}
-    </TableRow>
-  ))}
-</TableBody>
 
+                  <TableBody>
+                    {(Array.isArray(filteredProductos) ? filteredProductos : []).map((producto) => (
+                      <TableRow key={producto.id}>
+                        <TableCell className="font-mono text-sm">{producto.codigo ?? "-"}</TableCell>
+                        <TableCell className="font-medium">{producto.nombre ?? "-"}</TableCell>
+                        <TableCell>{producto.categoria ?? "-"}</TableCell>
+                        <TableCell className="text-right">
+                          ${Number(producto.precio ?? 0).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {Number(producto.stock_actual ?? 0)} / {Number(producto.stock_minimo ?? 0)}
+                        </TableCell>
+                        <TableCell>{getStockBadge(producto)}</TableCell>
+                        {(hasPermission("productos.editar") || hasPermission("productos.eliminar")) && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              {hasPermission("productos.editar") && (
+                                <Button variant="ghost" size="icon" onClick={() => handleEdit(producto)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {hasPermission("productos.eliminar") && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDelete(producto)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
                 </Table>
               </div>
             )}
@@ -211,8 +216,8 @@ export default function ProductosPage() {
         </Card>
       </div>
 
+      {/* Diálogos */}
       <ProductDialog open={isDialogOpen} onClose={handleDialogClose} product={selectedProduct} />
-
       <DeleteDialog
         open={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}

@@ -38,15 +38,21 @@ export default function NuevaVentaPage() {
   }, [hasPermission, router])
 
   const loadProductos = async () => {
-    try {
-      const response = await api.getProductos()
-      if (response.success && response.data) {
-        setProductos(response.data.filter((p) => p.activo && p.stock_actual > 0))
-      }
-    } catch (error) {
-      console.error("Error al cargar productos:", error)
+  try {
+    const response = await api.getProductos()
+    console.log("RESPONSE GET PRODUCTOS ===>", response)
+
+    if (response.success && Array.isArray(response.data)) {
+      setProductos(response.data.filter(p => p.activo && p.stock_actual > 0))
+    } else {
+      console.warn("response.data NO es array", response.data)
     }
+    
+  } catch (error) {
+    console.error("Error al cargar productos:", error)
   }
+}
+
 
   const addToCart = (producto: Producto) => {
     const existingItem = cart.find((item) => item.producto.id === producto.id)
