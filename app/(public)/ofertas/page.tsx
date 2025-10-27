@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Star, Percent } from "lucide-react"
 import Image from "next/image"
+import { formatPrice, parsePrice } from "@/lib/utils"
 
 export default function OfertasPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -82,7 +83,7 @@ export default function OfertasPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {productos.map((producto) => {
           const discount = getDiscount()
-          const originalPrice = producto.precio
+          const originalPrice = parsePrice(producto.precio)
           const discountedPrice = originalPrice * (1 - discount / 100)
 
           return (
@@ -109,8 +110,8 @@ export default function OfertasPage() {
                   <span className="ml-1 text-sm text-muted-foreground">(4.5)</span>
                 </div>
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground line-through">${originalPrice.toFixed(2)}</span>
-                  <span className="text-2xl font-bold text-red-600">${discountedPrice.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground line-through">${formatPrice(originalPrice)}</span>
+                  <span className="text-2xl font-bold text-red-600">${formatPrice(discountedPrice)}</span>
                 </div>
                 <Button className="w-full gap-2">
                   <ShoppingCart className="h-4 w-4" />
