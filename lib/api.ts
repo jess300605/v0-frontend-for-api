@@ -82,8 +82,11 @@ export interface VentaDetalle {
 }
 
 export interface VentaInput {
-  detalles: Array<{
-    producto_id: number
+  nombre_cliente: string
+  email_cliente?: string
+  telefono_cliente?: string
+  productos: Array<{
+    id_producto: number
     cantidad: number
     precio_unitario: number
   }>
@@ -321,6 +324,7 @@ class ApiClient {
   }
 
   async createVenta(data: VentaInput): Promise<ApiResponse<Venta>> {
+    console.log("[v0] Creating venta with data:", JSON.stringify(data, null, 2))
     return this.request<Venta>("/ventas", {
       method: "POST",
       body: JSON.stringify(data),

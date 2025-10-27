@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, Search, ShoppingCart } from "lucide-react"
 import { api, type Producto } from "@/lib/api"
@@ -28,6 +29,10 @@ export default function NuevaVentaPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [open, setOpen] = useState(false)
+
+  const [nombreCliente, setNombreCliente] = useState("")
+  const [emailCliente, setEmailCliente] = useState("")
+  const [telefonoCliente, setTelefonoCliente] = useState("")
 
   useEffect(() => {
     if (!hasPermission("ventas.crear")) {
@@ -137,6 +142,11 @@ export default function NuevaVentaPage() {
   }
 
   const handleSubmit = async () => {
+    if (!nombreCliente.trim()) {
+      setError("El nombre del cliente es obligatorio")
+      return
+    }
+
     if (cart.length === 0) {
       setError("Agrega al menos un producto a la venta")
       return
@@ -146,13 +156,22 @@ export default function NuevaVentaPage() {
     setError("")
 
     try {
-      const detalles = cart.map((item) => ({
-        producto_id: item.producto.id,
+      const productos = cart.map((item) => ({
+        id_producto: item.producto.id,
         cantidad: item.cantidad,
         precio_unitario: item.producto.precio,
       }))
 
-      const response = await api.createVenta({ detalles })
+      const ventaData = {
+        nombre_cliente: nombreCliente,
+        email_cliente: emailCliente || undefined,
+        telefono_cliente: telefonoCliente || undefined,
+        productos,
+      }
+
+      console.log("[v0] Submitting venta:", ventaData)
+
+      const response = await api.createVenta(ventaData)
 
       if (response.success) {
         router.push("/ventas")
@@ -186,7 +205,50 @@ export default function NuevaVentaPage() {
         )}
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Información del Cliente</CardTitle>
+                <CardDescription>Datos del comprador</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="nombre_cliente">
+                      Nombre del Cliente <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="nombre_cliente"
+                      placeholder="Nombre completo"
+                      value={nombreCliente}
+                      onChange={(e) => setNombreCliente(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email_cliente">Email (opcional)</Label>
+                    <Input
+                      id="email_cliente"
+                      type="email"
+                      placeholder="correo@ejemplo.com"
+                      value={emailCliente}
+                      onChange={(e) => setEmailCliente(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="telefono_cliente">Teléfono (opcional)</Label>
+                    <Input
+                      id="telefono_cliente"
+                      type="tel"
+                      placeholder="1234567890"
+                      value={telefonoCliente}
+                      onChange={(e) => setTelefonoCliente(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Productos</CardTitle>
