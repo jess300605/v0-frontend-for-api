@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Package, ShoppingCart, TrendingUp, Users, DollarSign, AlertCircle } from "lucide-react"
+import { Package, ShoppingCart, Users, DollarSign, AlertCircle } from "lucide-react"
 import { api } from "@/lib/api"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { MetricCard } from "@/components/metric-card"
@@ -13,16 +13,13 @@ import { RecentSales } from "@/components/recent-sales"
 import { LowStockAlert } from "@/components/low-stock-alert"
 
 interface DashboardData {
-  ventas_hoy: {
-    total: number
-    cantidad: number
+  metricas_principales: {
+    ventas_hoy: number
+    monto_hoy: number
+    productos_activos: number
+    productos_stock_bajo: number
   }
-  ventas_mes: {
-    total: number
-    cantidad: number
-  }
-  productos_total: number
-  productos_bajo_stock: number
+  fecha_actualizacion: string
   ventas_recientes: Array<{
     id: number
     fecha: string
@@ -116,28 +113,28 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Ventas Hoy"
-            value={`$${(data?.ventas_hoy?.total ?? 0).toLocaleString()}`}
+            value={data?.metricas_principales?.ventas_hoy || 0}
+            icon={ShoppingCart}
+            description="Cantidad de ventas del día"
+          />
+          <MetricCard
+            title="Monto Hoy"
+            value={`$${(data?.metricas_principales?.monto_hoy ?? 0).toLocaleString()}`}
             icon={DollarSign}
             description="Total de ventas del día"
           />
           <MetricCard
-            title="Ventas del Mes"
-            value={`$${(data?.ventas_mes?.total ?? 0).toLocaleString()}`}
-            icon={TrendingUp}
-            description="Acumulado mensual"
-          />
-          <MetricCard
-            title="Productos"
-            value={data?.productos_total || 0}
+            title="Productos Activos"
+            value={data?.metricas_principales?.productos_activos || 0}
             icon={Package}
             description="Total en inventario"
           />
           <MetricCard
             title="Stock Bajo"
-            value={data?.productos_bajo_stock || 0}
+            value={data?.metricas_principales?.productos_stock_bajo || 0}
             icon={AlertCircle}
             description="Productos con stock mínimo"
-            variant={data?.productos_bajo_stock ? "warning" : "default"}
+            variant={data?.metricas_principales?.productos_stock_bajo ? "warning" : "default"}
           />
         </div>
 

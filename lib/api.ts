@@ -24,29 +24,13 @@ export interface AuthData {
 }
 
 export interface DashboardData {
-  ventas_hoy: {
-    total: number
-    cantidad: number
+  metricas_principales: {
+    ventas_hoy: number
+    monto_hoy: number
+    productos_activos: number
+    productos_stock_bajo: number
   }
-  ventas_mes: {
-    total: number
-    cantidad: number
-  }
-  productos_total: number
-  productos_bajo_stock: number
-  ventas_recientes: Array<{
-    id: number
-    fecha: string
-    total: number
-    usuario: string
-    items: number
-  }>
-  productos_bajo_stock_lista: Array<{
-    id: number
-    nombre: string
-    stock_actual: number
-    stock_minimo: number
-  }>
+  fecha_actualizacion: string
 }
 
 export interface Producto {
