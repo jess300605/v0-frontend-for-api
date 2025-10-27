@@ -47,21 +47,34 @@ export default function ProductosPage() {
     setFilteredProductos(filtered)
   }, [searchTerm, productos])
 
-  // Cargar productos desde la API
   const loadProductos = async () => {
     try {
       setIsLoading(true)
+      console.log("[v0] Cargando productos...")
       const response = await api.getProductos()
-      if (response.success && Array.isArray(response.data)) {
-        const activos = response.data.filter((p) => p.activo && p.stock_actual > 0)
-        setProductos(activos)
-        setFilteredProductos(activos)
+      console.log("[v0] Respuesta completa:", response)
+
+      if (response.success && response.data) {
+        // La API devuelve { success: true, data: { productos: [...], paginacion: {...} } }
+        const productosData = (response.data as any).productos || response.data
+        console.log("[v0] Productos extraídos:", productosData)
+
+        if (Array.isArray(productosData)) {
+          const activos = productosData.filter((p) => p.activo && p.stock_actual > 0)
+          setProductos(activos)
+          setFilteredProductos(activos)
+        } else {
+          console.error("[v0] Los datos de productos no son un array:", productosData)
+          setProductos([])
+          setFilteredProductos([])
+        }
       } else {
+        console.error("[v0] Respuesta sin éxito o sin datos")
         setProductos([])
         setFilteredProductos([])
       }
     } catch (error) {
-      console.error("Error al cargar productos:", error)
+      console.error("[v0] Error al cargar productos:", error)
       setProductos([])
       setFilteredProductos([])
     } finally {
@@ -101,7 +114,8 @@ export default function ProductosPage() {
 
   const getStockBadge = (producto: Producto) => {
     if ((producto.stock_actual ?? 0) === 0) return <Badge variant="destructive">Sin stock</Badge>
-    if ((producto.stock_actual ?? 0) <= (producto.stock_minimo ?? 0)) return <Badge className="bg-orange-500">Stock bajo</Badge>
+    if ((producto.stock_actual ?? 0) <= (producto.stock_minimo ?? 0))
+      return <Badge className="bg-orange-500">Stock bajo</Badge>
     return <Badge variant="secondary">En stock</Badge>
   }
 
@@ -178,9 +192,7 @@ export default function ProductosPage() {
                         <TableCell className="font-mono text-sm">{producto.codigo ?? "-"}</TableCell>
                         <TableCell className="font-medium">{producto.nombre ?? "-"}</TableCell>
                         <TableCell>{producto.categoria ?? "-"}</TableCell>
-                        <TableCell className="text-right">
-                          ${Number(producto.precio ?? 0).toLocaleString()}
-                        </TableCell>
+                        <TableCell className="text-right">${Number(producto.precio ?? 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right">
                           {Number(producto.stock_actual ?? 0)} / {Number(producto.stock_minimo ?? 0)}
                         </TableCell>

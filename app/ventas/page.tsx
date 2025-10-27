@@ -46,13 +46,32 @@ export default function VentasPage() {
   const loadVentas = async () => {
     try {
       setIsLoading(true)
+      console.log("[v0] Cargando ventas...")
       const response = await api.getVentas()
+      console.log("[v0] Respuesta completa:", response)
+
       if (response.success && response.data) {
-        setVentas(response.data)
-        setFilteredVentas(response.data)
+        // La API devuelve { success: true, data: { ventas: [...], paginacion: {...} } }
+        const ventasData = (response.data as any).ventas || response.data
+        console.log("[v0] Ventas extraídas:", ventasData)
+
+        if (Array.isArray(ventasData)) {
+          setVentas(ventasData)
+          setFilteredVentas(ventasData)
+        } else {
+          console.error("[v0] Los datos de ventas no son un array:", ventasData)
+          setVentas([])
+          setFilteredVentas([])
+        }
+      } else {
+        console.error("[v0] Respuesta sin éxito o sin datos")
+        setVentas([])
+        setFilteredVentas([])
       }
     } catch (error) {
-      console.error("Error al cargar ventas:", error)
+      console.error("[v0] Error al cargar ventas:", error)
+      setVentas([])
+      setFilteredVentas([])
     } finally {
       setIsLoading(false)
     }
@@ -157,39 +176,32 @@ export default function VentasPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableBody>
-  {filteredVentas.map((venta) => (
-    <TableRow key={venta.id}>
-      <TableCell className="font-mono">#{venta.id}</TableCell>
-      <TableCell>
-        {format(new Date(venta.created_at), "dd/MM/yyyy HH:mm", { locale: es })}
-      </TableCell>
-      <TableCell>{venta.usuario_nombre || "N/A"}</TableCell>
-      <TableCell className="text-right font-medium">
-        ${venta.total.toLocaleString()}
-      </TableCell>
-      <TableCell>{getEstadoBadge(venta.estado)}</TableCell>
-      <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="icon" onClick={() => handleViewDetail(venta)}>
-            <Eye className="h-4 w-4" />
-          </Button>
-          {hasPermission("ventas.cancelar") && venta.estado === "completada" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleCancelSale(venta.id)}
-              className="text-destructive hover:text-destructive"
-            >
-              <XCircle className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
-
+                    {filteredVentas.map((venta) => (
+                      <TableRow key={venta.id}>
+                        <TableCell className="font-mono">#{venta.id}</TableCell>
+                        <TableCell>{format(new Date(venta.created_at), "dd/MM/yyyy HH:mm", { locale: es })}</TableCell>
+                        <TableCell>{venta.usuario_nombre || "N/A"}</TableCell>
+                        <TableCell className="text-right font-medium">${venta.total.toLocaleString()}</TableCell>
+                        <TableCell>{getEstadoBadge(venta.estado)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => handleViewDetail(venta)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {hasPermission("ventas.cancelar") && venta.estado === "completada" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleCancelSale(venta.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </div>

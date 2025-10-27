@@ -73,9 +73,7 @@ export interface Venta {
   total: number
   usuario_nombre: string
   estado: string
-
 }
-
 
 export interface VentaDetalle {
   id: number
@@ -172,16 +170,16 @@ class ApiClient {
       })
 
       const data = await response.json()
+      console.log(`[v0] API ${endpoint}:`, data)
 
-    if (!response.ok) {
-  console.log("RAW RESPONSE:", data)
-  throw new Error(data.message || "Error en la petición")
-}
-
+      if (!response.ok) {
+        console.error("[v0] Error en respuesta:", data)
+        throw new Error(data.message || "Error en la petición")
+      }
 
       return data
     } catch (error) {
-      console.error("API Error:", error)
+      console.error("[v0] API Error:", error)
       throw error
     }
   }
