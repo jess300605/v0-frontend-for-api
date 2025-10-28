@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 import { CartSheet } from "@/components/cart-sheet"
+import { AdminControlPanel } from "@/components/admin-control-panel"
 
 export function PublicHeader() {
   const { user, logout } = useAuth()
@@ -75,6 +76,8 @@ export function PublicHeader() {
               <Search className="h-4 w-4" />
             </Button>
           </div>
+
+          {user?.rol === "admin" && <AdminControlPanel />}
 
           <CartSheet />
 

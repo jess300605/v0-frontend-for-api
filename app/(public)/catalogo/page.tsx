@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ShoppingCart, Search, Star } from "lucide-react"
+import { ShoppingCart, Search, Star, Edit, Save, X } from "lucide-react"
 import Image from "next/image"
 import { getProductImage } from "@/lib/product-images"
 import { useCart } from "@/contexts/cart-context"
+import { useAuth } from "@/lib/auth-context"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function CatalogoPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -19,6 +22,10 @@ export default function CatalogoPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const { addToCart } = useCart()
+  const { user } = useAuth()
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editForm, setEditForm] = useState<Partial<Producto>>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     loadProductos()
@@ -69,7 +76,46 @@ export default function CatalogoPage() {
     setFilteredProductos(filtered)
   }
 
+  const startEditing = (producto: Producto) => {
+    setEditingId(producto.id)
+    setEditForm(producto)
+  }
+
+  const cancelEditing = () => {
+    setEditingId(null)
+    setEditForm({})
+  }
+
+  const saveProduct = async () => {
+    if (!editingId || !editForm) return
+
+    setSaving(true)
+    try {
+      const response = await api.updateProducto(editingId, {
+        codigo_sku: editForm.codigo_sku!,
+        nombre: editForm.nombre!,
+        descripcion: editForm.descripcion || "",
+        categoria: editForm.categoria!,
+        precio: Number(editForm.precio),
+        stock: Number(editForm.stock),
+        stock_minimo: Number(editForm.stock_minimo),
+      })
+
+      if (response.success) {
+        await loadProductos()
+        setEditingId(null)
+        setEditForm({})
+      }
+    } catch (error) {
+      console.error("[v0] Error updating product:", error)
+      alert("Error al actualizar el producto")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const categories = Array.from(new Set(productos.map((p) => p.categoria)))
+  const isAdmin = user?.rol === "admin"
 
   if (loading) {
     return (
@@ -122,36 +168,119 @@ export default function CatalogoPage() {
 
       {/* Products Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {filteredProductos.map((producto) => (
-          <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
-            <div className="relative aspect-square overflow-hidden bg-gray-100">
-              <Image
-                src={getProductImage(producto.nombre) || "/placeholder.svg"}
-                alt={producto.nombre}
-                fill
-                className="object-cover transition-transform group-hover:scale-105"
-              />
-              {producto.stock < 10 && <Badge className="absolute right-2 top-2 bg-red-500">Últimas unidades</Badge>}
-            </div>
-            <CardContent className="p-4">
-              <p className="mb-1 text-sm text-muted-foreground">{producto.categoria}</p>
-              <h3 className="mb-2 font-semibold">{producto.nombre}</h3>
-              <div className="mb-3 flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                ))}
-                <span className="ml-1 text-sm text-muted-foreground">(4.5)</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-emerald-600">${Number(producto.precio || 0).toFixed(2)}</span>
-                <Button size="sm" className="gap-2" onClick={() => addToCart(producto)}>
-                  <ShoppingCart className="h-4 w-4" />
-                  Agregar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {filteredProductos.map((producto) => {
+          const isEditing = editingId === producto.id
+
+          return (
+            <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
+              {isEditing ? (
+                <div className="p-4">
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs">Nombre</Label>
+                      <Input
+                        value={editForm.nombre || ""}
+                        onChange={(e) => setEditForm({ ...editForm, nombre: e.target.value })}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Categoría</Label>
+                      <Input
+                        value={editForm.categoria || ""}
+                        onChange={(e) => setEditForm({ ...editForm, categoria: e.target.value })}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Precio</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editForm.precio || ""}
+                        onChange={(e) => setEditForm({ ...editForm, precio: Number(e.target.value) })}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Stock</Label>
+                      <Input
+                        type="number"
+                        value={editForm.stock || ""}
+                        onChange={(e) => setEditForm({ ...editForm, stock: Number(e.target.value) })}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Descripción</Label>
+                      <Textarea
+                        value={editForm.descripcion || ""}
+                        onChange={(e) => setEditForm({ ...editForm, descripcion: e.target.value })}
+                        className="h-16 text-xs"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={saveProduct} disabled={saving} className="flex-1">
+                        <Save className="mr-1 h-3 w-3" />
+                        {saving ? "Guardando..." : "Guardar"}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEditing} disabled={saving}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="relative aspect-square overflow-hidden bg-gray-100">
+                    <Image
+                      src={getProductImage(producto.nombre) || "/placeholder.svg"}
+                      alt={producto.nombre}
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                    />
+                    {producto.stock < 10 && (
+                      <Badge className="absolute right-2 top-2 bg-red-500">Últimas unidades</Badge>
+                    )}
+                    {isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="absolute left-2 top-2"
+                        onClick={() => startEditing(producto)}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                  <CardContent className="p-4">
+                    <p className="mb-1 text-sm text-muted-foreground">{producto.categoria}</p>
+                    <h3 className="mb-2 font-semibold">{producto.nombre}</h3>
+                    {producto.descripcion && (
+                      <p className="mb-2 line-clamp-2 text-xs text-muted-foreground">{producto.descripcion}</p>
+                    )}
+                    <div className="mb-3 flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                      <span className="ml-1 text-sm text-muted-foreground">(4.5)</span>
+                    </div>
+                    {isAdmin && <p className="mb-2 text-xs text-muted-foreground">Stock: {producto.stock} unidades</p>}
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-emerald-600">
+                        ${Number(producto.precio || 0).toFixed(2)}
+                      </span>
+                      <Button size="sm" className="gap-2" onClick={() => addToCart(producto)}>
+                        <ShoppingCart className="h-4 w-4" />
+                        Agregar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </>
+              )}
+            </Card>
+          )
+        })}
       </div>
 
       {filteredProductos.length === 0 && (
