@@ -8,10 +8,13 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Star } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { getProductImage } from "@/lib/product-images"
+import { useCart } from "@/contexts/cart-context"
 
 export default function HomePage() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
+  const { addToCart } = useCart()
 
   useEffect(() => {
     loadProductos()
@@ -39,12 +42,6 @@ export default function HomePage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  // Generate image URL based on product name
-  const getProductImage = (producto: Producto) => {
-    const query = encodeURIComponent(producto.nombre + " furniture")
-    return `/placeholder.svg?height=300&width=300&query=${query}`
   }
 
   if (loading) {
@@ -86,7 +83,7 @@ export default function HomePage() {
             <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
               <div className="relative aspect-square overflow-hidden bg-gray-100">
                 <Image
-                  src={getProductImage(producto) || "/placeholder.svg"}
+                  src={getProductImage(producto.nombre) || "/placeholder.svg"}
                   alt={producto.nombre}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
@@ -106,7 +103,7 @@ export default function HomePage() {
                   <span className="text-2xl font-bold text-emerald-600">
                     ${Number(producto.precio || 0).toFixed(2)}
                   </span>
-                  <Button size="sm" className="gap-2">
+                  <Button size="sm" className="gap-2" onClick={() => addToCart(producto)}>
                     <ShoppingCart className="h-4 w-4" />
                     Agregar
                   </Button>

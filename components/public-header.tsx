@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, User, Search } from "lucide-react"
+import { User, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth-context"
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
+import { CartSheet } from "@/components/cart-sheet"
 
 export function PublicHeader() {
   const { user, logout } = useAuth()
@@ -75,9 +76,7 @@ export function PublicHeader() {
             </Button>
           </div>
 
-          <Button size="icon" variant="ghost" className="text-white hover:bg-emerald-600">
-            <ShoppingCart className="h-5 w-5" />
-          </Button>
+          <CartSheet />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

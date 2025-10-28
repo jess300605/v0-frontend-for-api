@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ShoppingCart, Search, Star } from "lucide-react"
 import Image from "next/image"
+import { getProductImage } from "@/lib/product-images"
+import { useCart } from "@/contexts/cart-context"
 
 export default function CatalogoPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -16,6 +18,7 @@ export default function CatalogoPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const { addToCart } = useCart()
 
   useEffect(() => {
     loadProductos()
@@ -67,11 +70,6 @@ export default function CatalogoPage() {
   }
 
   const categories = Array.from(new Set(productos.map((p) => p.categoria)))
-
-  const getProductImage = (producto: Producto) => {
-    const query = encodeURIComponent(producto.nombre + " furniture")
-    return `/placeholder.svg?height=300&width=300&query=${query}`
-  }
 
   if (loading) {
     return (
@@ -128,7 +126,7 @@ export default function CatalogoPage() {
           <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
             <div className="relative aspect-square overflow-hidden bg-gray-100">
               <Image
-                src={getProductImage(producto) || "/placeholder.svg"}
+                src={getProductImage(producto.nombre) || "/placeholder.svg"}
                 alt={producto.nombre}
                 fill
                 className="object-cover transition-transform group-hover:scale-105"
@@ -146,7 +144,7 @@ export default function CatalogoPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-emerald-600">${Number(producto.precio || 0).toFixed(2)}</span>
-                <Button size="sm" className="gap-2">
+                <Button size="sm" className="gap-2" onClick={() => addToCart(producto)}>
                   <ShoppingCart className="h-4 w-4" />
                   Agregar
                 </Button>
