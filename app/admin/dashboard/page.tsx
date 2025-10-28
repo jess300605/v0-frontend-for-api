@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const [recentSales, setRecentSales] = useState<Venta[]>([])
   const [lowStockProducts, setLowStockProducts] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -35,21 +36,33 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true)
+      setError(null)
+      console.log("[v0] Loading dashboard data...")
 
       const [ventasRes, productosRes] = await Promise.all([api.getVentas(), api.getProductos()])
+
+      console.log("[v0] Ventas response:", ventasRes)
+      console.log("[v0] Productos response:", productosRes)
 
       let ventas: Venta[] = []
       let productos: Producto[] = []
 
       if (ventasRes.success && ventasRes.data) {
         ventas = Array.isArray(ventasRes.data) ? ventasRes.data : ventasRes.data.ventas || []
+        console.log("[v0] Ventas array:", ventas)
         setRecentSales(ventas.slice(0, 5))
+      } else {
+        console.error("[v0] Failed to load ventas:", ventasRes)
       }
 
       if (productosRes.success && productosRes.data) {
         productos = Array.isArray(productosRes.data) ? productosRes.data : productosRes.data.productos || []
+        console.log("[v0] Productos array:", productos)
         const lowStock = productos.filter((p: Producto) => p.stock <= p.stock_minimo && p.activo)
+        console.log("[v0] Low stock products:", lowStock)
         setLowStockProducts(lowStock.slice(0, 5))
+      } else {
+        console.error("[v0] Failed to load productos:", productosRes)
       }
 
       const today = new Date()
@@ -61,6 +74,8 @@ export default function DashboardPage() {
         return ventaDate.getTime() === today.getTime()
       })
 
+      console.log("[v0] Ventas hoy:", ventasHoy)
+
       const metricas = {
         ventas_hoy: ventasHoy.length,
         monto_hoy: ventasHoy.reduce((sum, v) => sum + Number(v.total || 0), 0),
@@ -68,12 +83,15 @@ export default function DashboardPage() {
         productos_stock_bajo: productos.filter((p) => p.stock <= p.stock_minimo && p.activo).length,
       }
 
+      console.log("[v0] Calculated metrics:", metricas)
+
       setDashboardData({
         metricas_principales: metricas,
         fecha_actualizacion: new Date().toISOString(),
       })
     } catch (error) {
       console.error("[v0] Error loading dashboard:", error)
+      setError(error instanceof Error ? error.message : "Error al cargar los datos")
     } finally {
       setLoading(false)
     }
@@ -103,6 +121,17 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Card className="border-red-500 bg-red-50">
+          <CardContent className="pt-6">
+            <p className="text-red-600">Error: {error}</p>
+            <Button onClick={loadDashboardData} className="mt-2 bg-transparent" variant="outline">
+              Reintentar
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Panel de Control</h1>
@@ -112,6 +141,20 @@ export default function DashboardPage() {
           <Link href="/admin/ventas/nueva">Nueva Venta</Link>
         </Button>
       </div>
+
+      {process.env.NODE_ENV === "development" && (
+        <Card className="border-blue-500 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-sm">Debug Info</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs">
+            <p>Loading: {loading ? "Yes" : "No"}</p>
+            <p>Metrics: {metrics ? JSON.stringify(metrics) : "null"}</p>
+            <p>Recent Sales: {recentSales.length}</p>
+            <p>Low Stock: {lowStockProducts.length}</p>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
