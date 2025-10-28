@@ -36,26 +36,42 @@ export default function DashboardPage() {
     try {
       setLoading(true)
 
-      const [dashboardRes, ventasRes, productosRes] = await Promise.all([
-        api.getDashboard(),
-        api.getVentas(),
-        api.getProductos(),
-      ])
+      const [ventasRes, productosRes] = await Promise.all([api.getVentas(), api.getProductos()])
 
-      if (dashboardRes.success && dashboardRes.data) {
-        setDashboardData(dashboardRes.data)
-      }
+      let ventas: Venta[] = []
+      let productos: Producto[] = []
 
       if (ventasRes.success && ventasRes.data) {
-        const ventas = Array.isArray(ventasRes.data) ? ventasRes.data : ventasRes.data.ventas || []
+        ventas = Array.isArray(ventasRes.data) ? ventasRes.data : ventasRes.data.ventas || []
         setRecentSales(ventas.slice(0, 5))
       }
 
       if (productosRes.success && productosRes.data) {
-        const productos = Array.isArray(productosRes.data) ? productosRes.data : productosRes.data.productos || []
+        productos = Array.isArray(productosRes.data) ? productosRes.data : productosRes.data.productos || []
         const lowStock = productos.filter((p: Producto) => p.stock <= p.stock_minimo && p.activo)
         setLowStockProducts(lowStock.slice(0, 5))
       }
+
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      const ventasHoy = ventas.filter((v) => {
+        const ventaDate = new Date(v.created_at || v.fecha)
+        ventaDate.setHours(0, 0, 0, 0)
+        return ventaDate.getTime() === today.getTime()
+      })
+
+      const metricas = {
+        ventas_hoy: ventasHoy.length,
+        monto_hoy: ventasHoy.reduce((sum, v) => sum + Number(v.total || 0), 0),
+        productos_activos: productos.filter((p) => p.activo).length,
+        productos_stock_bajo: productos.filter((p) => p.stock <= p.stock_minimo && p.activo).length,
+      }
+
+      setDashboardData({
+        metricas_principales: metricas,
+        fecha_actualizacion: new Date().toISOString(),
+      })
     } catch (error) {
       console.error("[v0] Error loading dashboard:", error)
     } finally {
