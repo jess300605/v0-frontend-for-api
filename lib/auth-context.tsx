@@ -31,15 +31,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    const storedUser = localStorage.getItem("auth_user")
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser)
+        setUser(userData)
+        setIsLoading(false)
+        return
+      } catch (error) {
+        console.error("[v0] Error parsing stored user:", error)
+      }
+    }
+
     try {
       const response = await api.me()
       if (response.success && response.data) {
         setUser(response.data.usuario)
+        localStorage.setItem("auth_user", JSON.stringify(response.data.usuario))
       } else {
         localStorage.removeItem("auth_token")
+        localStorage.removeItem("auth_user")
       }
     } catch (error) {
-      localStorage.removeItem("auth_token")
+      const errorMessage = error instanceof Error ? error.message : ""
+      if (errorMessage.includes("401") || errorMessage.includes("Unauthorized")) {
+        console.log("[v0] Token expired or invalid, removing auth")
+        localStorage.removeItem("auth_token")
+        localStorage.removeItem("auth_user")
+      } else if (errorMessage.includes("404")) {
+        console.log("[v0] /me endpoint not available, keeping stored auth")
+        // Don't remove token on 404 - the endpoint might not exist
+      } else {
+        console.error("[v0] Auth check error:", error)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -53,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.success && response.data) {
         localStorage.setItem("auth_token", response.data.token)
+        localStorage.setItem("auth_user", JSON.stringify(response.data.usuario))
         setUser(response.data.usuario)
         console.log("[v0] Login successful, user:", response.data.usuario)
         return response.data.usuario
@@ -73,8 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Error al cerrar sesión:", error)
     } finally {
       localStorage.removeItem("auth_token")
+      localStorage.removeItem("auth_user")
       setUser(null)
-      router.push("/auth/login")
+      router.push("/login")
     }
   }
 
