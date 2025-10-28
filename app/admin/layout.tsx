@@ -13,24 +13,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
 
   useEffect(() => {
+    console.log("[v0] Admin Layout - Auth state:", { user: user?.nombre, rol: user?.rol, isLoading })
+  }, [user, isLoading])
+
+  useEffect(() => {
     if (!isLoading) {
+      console.log("[v0] Admin Layout - Checking access:", { hasUser: !!user, rol: user?.rol })
       if (!user) {
+        console.log("[v0] Admin Layout - No user, redirecting to login")
         router.push("/login")
       } else if (user.rol !== "admin") {
+        console.log("[v0] Admin Layout - User is not admin, redirecting to home")
         router.push("/")
+      } else {
+        console.log("[v0] Admin Layout - User is admin, allowing access")
       }
     }
   }, [user, isLoading, router])
 
-  if (isLoading || !user || user.rol !== "admin") {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Cargando...</p>
+          <p className="mt-4 text-muted-foreground">Verificando autenticación...</p>
         </div>
       </div>
     )
+  }
+
+  if (!user || user.rol !== "admin") {
+    return null
   }
 
   return (
