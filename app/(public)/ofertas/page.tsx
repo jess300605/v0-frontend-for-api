@@ -8,10 +8,13 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Star, Percent } from "lucide-react"
 import Image from "next/image"
 import { formatPrice, parsePrice } from "@/lib/utils"
+import { getProductImage } from "@/lib/product-images"
+import { useCart } from "@/contexts/cart-context"
 
 export default function OfertasPage() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
+  const { addItem } = useCart()
 
   useEffect(() => {
     loadProductos()
@@ -38,11 +41,6 @@ export default function OfertasPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const getProductImage = (producto: Producto) => {
-    const query = encodeURIComponent(producto.nombre + " furniture")
-    return `/placeholder.svg?height=300&width=300&query=${query}`
   }
 
   const getDiscount = () => Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
@@ -90,7 +88,7 @@ export default function OfertasPage() {
             <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
               <div className="relative aspect-square overflow-hidden bg-gray-100">
                 <Image
-                  src={getProductImage(producto) || "/placeholder.svg"}
+                  src={getProductImage(producto.nombre) || "/placeholder.svg"}
                   alt={producto.nombre}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
@@ -113,7 +111,7 @@ export default function OfertasPage() {
                   <span className="text-sm text-muted-foreground line-through">${formatPrice(originalPrice)}</span>
                   <span className="text-2xl font-bold text-red-600">${formatPrice(discountedPrice)}</span>
                 </div>
-                <Button className="w-full gap-2">
+                <Button className="w-full gap-2" onClick={() => addItem(producto)}>
                   <ShoppingCart className="h-4 w-4" />
                   Agregar al Carrito
                 </Button>
