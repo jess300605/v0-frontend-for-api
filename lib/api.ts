@@ -43,7 +43,7 @@ export interface Producto {
   stock: number
   stock_minimo: number
   activo: boolean
-  imagen_url?: string | null
+  url_imagen?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -56,7 +56,7 @@ export interface ProductoInput {
   precio: number
   stock: number
   stock_minimo: number
-  imagen_url?: string
+  url_imagen?: string
 }
 
 export interface Venta {
@@ -297,7 +297,7 @@ class ApiClient {
       precio: typeof data.precio,
       stock: typeof data.stock,
       stock_minimo: typeof data.stock_minimo,
-      imagen_url: typeof data.imagen_url,
+      url_imagen: typeof data.url_imagen,
     })
 
     const response = await this.request<Producto>(`/productos/${id}`, {

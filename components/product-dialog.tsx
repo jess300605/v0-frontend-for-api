@@ -33,7 +33,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     precio: "",
     stock_actual: "",
     stock_minimo: "",
-    imagen_url: "",
+    url_imagen: "",
   })
   const [originalCodigo, setOriginalCodigo] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -51,7 +51,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         precio: product.precio?.toString() || "0",
         stock_actual: product.stock?.toString() || "0",
         stock_minimo: product.stock_minimo?.toString() || "0",
-        imagen_url: product.imagen_url || "",
+        url_imagen: product.url_imagen || "",
       })
       setOriginalCodigo(codigoValue)
     } else {
@@ -63,7 +63,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         precio: "",
         stock_actual: "",
         stock_minimo: "",
-        imagen_url: "",
+        url_imagen: "",
       })
       setOriginalCodigo("")
     }
@@ -105,7 +105,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         precio: precio,
         stock: stock,
         stock_minimo: stock_minimo,
-        imagen_url: formData.imagen_url.trim() || undefined,
+        url_imagen: formData.url_imagen.trim() || undefined,
       }
 
       // Only send codigo_sku if it's a new product or if it has changed
@@ -207,12 +207,12 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imagen_url">URL de Imagen (Google)</Label>
+            <Label htmlFor="url_imagen">URL de Imagen (Google)</Label>
             <Input
-              id="imagen_url"
+              id="url_imagen"
               type="url"
-              value={formData.imagen_url}
-              onChange={(e) => setFormData({ ...formData, imagen_url: e.target.value })}
+              value={formData.url_imagen}
+              onChange={(e) => setFormData({ ...formData, url_imagen: e.target.value })}
               disabled={isLoading}
               placeholder="https://example.com/imagen.jpg"
             />

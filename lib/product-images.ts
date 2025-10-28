@@ -1,9 +1,8 @@
 import type { Producto } from "./api"
 
 export function getProductImage(producto: Producto | string): string {
-  // If producto has a custom imagen_url, use it
-  if (typeof producto === "object" && producto.imagen_url) {
-    return producto.imagen_url
+  if (typeof producto === "object" && producto.url_imagen) {
+    return producto.url_imagen
   }
 
   // Get product name from object or use string directly
