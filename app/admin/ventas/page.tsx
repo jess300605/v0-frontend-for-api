@@ -40,11 +40,17 @@ export default function VentasPage() {
       setIsLoading(true)
       const response = await api.getVentas()
       if (response.success && response.data) {
-        setVentas(response.data)
-        setFilteredVentas(response.data)
+        const ventasArray = Array.isArray(response.data) ? response.data : []
+        setVentas(ventasArray)
+        setFilteredVentas(ventasArray)
+      } else {
+        setVentas([])
+        setFilteredVentas([])
       }
     } catch (error) {
       console.error("Error loading ventas:", error)
+      setVentas([])
+      setFilteredVentas([])
     } finally {
       setIsLoading(false)
     }

@@ -45,11 +45,17 @@ export default function ProductosPage() {
       setIsLoading(true)
       const response = await api.getProductos()
       if (response.success && response.data) {
-        setProductos(response.data)
-        setFilteredProductos(response.data)
+        const productosArray = Array.isArray(response.data) ? response.data : []
+        setProductos(productosArray)
+        setFilteredProductos(productosArray)
+      } else {
+        setProductos([])
+        setFilteredProductos([])
       }
     } catch (error) {
       console.error("Error loading productos:", error)
+      setProductos([])
+      setFilteredProductos([])
     } finally {
       setIsLoading(false)
     }

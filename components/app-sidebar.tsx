@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { Package, ShoppingCart, BarChart3, Users, Home, LogOut } from "lucide-react"
+import { Package, ShoppingCart, BarChart3, Users, Home, LogOut, Store } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -75,6 +75,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900"
+                >
+                  <Link href="/">
+                    <Store />
+                    <span>Volver a la Tienda</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel>Principal</SidebarGroupLabel>
           <SidebarGroupContent>
