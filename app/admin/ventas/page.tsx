@@ -38,17 +38,26 @@ export default function VentasPage() {
   const loadVentas = async () => {
     try {
       setIsLoading(true)
+      console.log("[v0] Loading ventas...")
       const response = await api.getVentas()
+      console.log("[v0] Ventas API response:", response)
+      console.log("[v0] Response.success:", response.success)
+      console.log("[v0] Response.data:", response.data)
+      console.log("[v0] Is response.data an array?", Array.isArray(response.data))
+
       if (response.success && response.data) {
         const ventasArray = Array.isArray(response.data) ? response.data : []
+        console.log("[v0] Ventas array length:", ventasArray.length)
+        console.log("[v0] First venta:", ventasArray[0])
         setVentas(ventasArray)
         setFilteredVentas(ventasArray)
       } else {
+        console.log("[v0] No data in response, setting empty arrays")
         setVentas([])
         setFilteredVentas([])
       }
     } catch (error) {
-      console.error("Error loading ventas:", error)
+      console.error("[v0] Error loading ventas:", error)
       setVentas([])
       setFilteredVentas([])
     } finally {

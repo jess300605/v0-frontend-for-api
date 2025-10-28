@@ -43,17 +43,26 @@ export default function ProductosPage() {
   const loadProductos = async () => {
     try {
       setIsLoading(true)
+      console.log("[v0] Loading productos...")
       const response = await api.getProductos()
+      console.log("[v0] Productos API response:", response)
+      console.log("[v0] Response.success:", response.success)
+      console.log("[v0] Response.data:", response.data)
+      console.log("[v0] Is response.data an array?", Array.isArray(response.data))
+
       if (response.success && response.data) {
         const productosArray = Array.isArray(response.data) ? response.data : []
+        console.log("[v0] Productos array length:", productosArray.length)
+        console.log("[v0] First producto:", productosArray[0])
         setProductos(productosArray)
         setFilteredProductos(productosArray)
       } else {
+        console.log("[v0] No data in response, setting empty arrays")
         setProductos([])
         setFilteredProductos([])
       }
     } catch (error) {
-      console.error("Error loading productos:", error)
+      console.error("[v0] Error loading productos:", error)
       setProductos([])
       setFilteredProductos([])
     } finally {
