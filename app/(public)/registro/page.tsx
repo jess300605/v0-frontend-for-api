@@ -46,18 +46,19 @@ export default function RegistroPage() {
     setIsLoading(true)
 
     try {
-      await api.request("/auth/register", {
-        method: "POST",
-        body: JSON.stringify({
-          nombre: formData.nombre,
-          email: formData.email,
-          password: formData.password,
-        }),
+      const response = await api.register({
+        nombre: formData.nombre,
+        email: formData.email,
+        contraseña: formData.password,
+        contraseña_confirmation: formData.confirmPassword,
       })
+
+      console.log("[v0] Registration successful:", response)
 
       // Redirect to home page after successful registration
       router.push("/?registered=true")
     } catch (err) {
+      console.error("[v0] Registration error:", err)
       setError(err instanceof Error ? err.message : "Error al registrarse")
     } finally {
       setIsLoading(false)

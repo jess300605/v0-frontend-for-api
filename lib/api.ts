@@ -236,9 +236,21 @@ class ApiClient {
 
   // Auth endpoints
   async login(email: string, contraseña: string): Promise<ApiResponse<AuthData>> {
-    return this.request<AuthData>("/auth/login", {
+    return this.request<AuthData>("/login", {
       method: "POST",
       body: JSON.stringify({ email, contraseña }),
+    })
+  }
+
+  async register(data: {
+    nombre: string
+    email: string
+    contraseña: string
+    contraseña_confirmation: string
+  }): Promise<ApiResponse<AuthData>> {
+    return this.request<AuthData>("/register", {
+      method: "POST",
+      body: JSON.stringify(data),
     })
   }
 
