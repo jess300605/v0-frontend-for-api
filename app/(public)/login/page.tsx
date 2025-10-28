@@ -25,14 +25,22 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
+      console.log("[v0] Submitting login form")
       const user = await login(email, password)
+      console.log("[v0] Login successful, user role:", user.rol)
+
       if (user.rol === "admin") {
-        router.push("/admin")
+        console.log("[v0] Redirecting to admin panel")
+        router.push("/admin/dashboard")
       } else {
+        console.log("[v0] Redirecting to home")
         router.push("/")
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al iniciar sesión")
+      console.error("[v0] Login error caught:", err)
+      const errorMessage = err instanceof Error ? err.message : "Error al iniciar sesión"
+      console.error("[v0] Error message:", errorMessage)
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

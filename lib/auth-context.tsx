@@ -8,7 +8,7 @@ interface AuthContextType {
   user: Usuario | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<Usuario | void>
   logout: () => Promise<void>
   hasPermission: (permission: string) => boolean
 }
@@ -46,13 +46,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const login = async (email: string, password: string) => {
-    const response = await api.login(email, password)
-    if (response.success && response.data) {
-      localStorage.setItem("auth_token", response.data.token)
-      setUser(response.data.usuario)
-      router.push("/dashboard")
-    } else {
-      throw new Error(response.message || "Error al iniciar sesión")
+    console.log("[v0] Attempting login for:", email)
+    try {
+      const response = await api.login(email, password)
+      console.log("[v0] Login response:", response)
+
+      if (response.success && response.data) {
+        localStorage.setItem("auth_token", response.data.token)
+        setUser(response.data.usuario)
+        console.log("[v0] Login successful, user:", response.data.usuario)
+        return response.data.usuario
+      } else {
+        console.error("[v0] Login failed:", response)
+        throw new Error(response.message || "Error al iniciar sesión")
+      }
+    } catch (error) {
+      console.error("[v0] Login error:", error)
+      throw error
     }
   }
 
