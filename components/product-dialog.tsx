@@ -33,6 +33,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     precio: "",
     stock_actual: "",
     stock_minimo: "",
+    imagen_url: "",
   })
   const [originalCodigo, setOriginalCodigo] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -50,6 +51,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         precio: product.precio?.toString() || "0",
         stock_actual: product.stock?.toString() || "0",
         stock_minimo: product.stock_minimo?.toString() || "0",
+        imagen_url: product.imagen_url || "",
       })
       setOriginalCodigo(codigoValue)
     } else {
@@ -61,6 +63,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         precio: "",
         stock_actual: "",
         stock_minimo: "",
+        imagen_url: "",
       })
       setOriginalCodigo("")
     }
@@ -102,6 +105,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         precio: precio,
         stock: stock,
         stock_minimo: stock_minimo,
+        imagen_url: formData.imagen_url.trim() || undefined,
       }
 
       // Only send codigo_sku if it's a new product or if it has changed
@@ -200,6 +204,21 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
               placeholder="Descripción detallada del producto"
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="imagen_url">URL de Imagen (Google)</Label>
+            <Input
+              id="imagen_url"
+              type="url"
+              value={formData.imagen_url}
+              onChange={(e) => setFormData({ ...formData, imagen_url: e.target.value })}
+              disabled={isLoading}
+              placeholder="https://example.com/imagen.jpg"
+            />
+            <p className="text-xs text-muted-foreground">
+              Pega aquí la URL de una imagen de Google para personalizar la imagen del producto
+            </p>
           </div>
 
           <div className="grid grid-cols-3 gap-4">

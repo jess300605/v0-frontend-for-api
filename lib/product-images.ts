@@ -1,5 +1,13 @@
-// Helper function to get product image based on product name
-export function getProductImage(productName: string): string {
+import type { Producto } from "./api"
+
+export function getProductImage(producto: Producto | string): string {
+  // If producto has a custom imagen_url, use it
+  if (typeof producto === "object" && producto.imagen_url) {
+    return producto.imagen_url
+  }
+
+  // Get product name from object or use string directly
+  const productName = typeof producto === "object" ? producto.nombre : producto
   const name = productName.toLowerCase()
 
   // Map product names to appropriate image queries

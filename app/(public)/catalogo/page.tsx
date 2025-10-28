@@ -101,6 +101,7 @@ export default function CatalogoPage() {
         precio: Number(editForm.precio),
         stock: Number(editForm.stock),
         stock_minimo: Number(editForm.stock_minimo),
+        imagen_url: editForm.imagen_url || undefined,
       }
 
       if (editForm.codigo_sku !== originalSku) {
@@ -221,6 +222,16 @@ export default function CatalogoPage() {
                       />
                     </div>
                     <div>
+                      <Label className="text-xs">URL de Imagen</Label>
+                      <Input
+                        type="url"
+                        value={editForm.imagen_url || ""}
+                        onChange={(e) => setEditForm({ ...editForm, imagen_url: e.target.value })}
+                        className="h-8"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div>
                       <Label className="text-xs">Descripción</Label>
                       <Textarea
                         value={editForm.descripcion || ""}
@@ -243,7 +254,7 @@ export default function CatalogoPage() {
                 <>
                   <div className="relative aspect-square overflow-hidden bg-gray-100">
                     <Image
-                      src={getProductImage(producto.nombre) || "/placeholder.svg"}
+                      src={getProductImage(producto) || "/placeholder.svg"}
                       alt={producto.nombre}
                       fill
                       className="object-cover transition-transform group-hover:scale-105"
