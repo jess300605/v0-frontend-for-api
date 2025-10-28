@@ -46,7 +46,6 @@ export default function RegistroPage() {
     setIsLoading(true)
 
     try {
-      // Note: You'll need to add a register endpoint to your API
       await api.request("/auth/register", {
         method: "POST",
         body: JSON.stringify({
@@ -56,7 +55,8 @@ export default function RegistroPage() {
         }),
       })
 
-      router.push("/login?registered=true")
+      // Redirect to home page after successful registration
+      router.push("/?registered=true")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al registrarse")
     } finally {

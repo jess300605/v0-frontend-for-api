@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CheckCircle } from "lucide-react"
+import { CheckCircle, Phone } from "lucide-react"
 import Link from "next/link"
 
 export default function CheckoutSuccessPage() {
@@ -14,14 +14,18 @@ export default function CheckoutSuccessPage() {
             <CheckCircle className="h-12 w-12 text-emerald-600" />
           </div>
           <div className="text-center">
-            <h1 className="mb-2 text-3xl font-bold">Pedido Confirmado</h1>
-            <p className="text-muted-foreground">
-              Tu pedido ha sido procesado exitosamente. Recibirás un correo de confirmación pronto.
-            </p>
+            <h1 className="mb-2 text-3xl font-bold">¡Pedido Confirmado!</h1>
+            <p className="text-muted-foreground mb-4">Tu pedido ha sido procesado exitosamente.</p>
+            <div className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 p-4 text-emerald-700">
+              <Phone className="h-5 w-5" />
+              <p className="text-sm font-medium">
+                Uno de nuestros agentes se comunicará contigo pronto para coordinar la entrega.
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
-            <Link href="/mis-pedidos">
-              <Button>Ver Mis Pedidos</Button>
+            <Link href="/">
+              <Button>Volver al Inicio</Button>
             </Link>
             <Link href="/catalogo">
               <Button variant="outline">Seguir Comprando</Button>
