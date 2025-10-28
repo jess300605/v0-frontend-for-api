@@ -40,7 +40,15 @@ export default function LoginPage() {
       console.error("[v0] Login error caught:", err)
       const errorMessage = err instanceof Error ? err.message : "Error al iniciar sesión"
       console.error("[v0] Error message:", errorMessage)
-      setError(errorMessage)
+
+      if (errorMessage.includes("404")) {
+        setError(
+          "Error de configuración: El endpoint de login no existe en la API. " +
+            "Por favor verifica que tu API Laravel tenga configurado el endpoint POST /api/login",
+        )
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }

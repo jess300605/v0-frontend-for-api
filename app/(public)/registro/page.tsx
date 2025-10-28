@@ -55,11 +55,19 @@ export default function RegistroPage() {
 
       console.log("[v0] Registration successful:", response)
 
-      // Redirect to home page after successful registration
       router.push("/?registered=true")
     } catch (err) {
       console.error("[v0] Registration error:", err)
-      setError(err instanceof Error ? err.message : "Error al registrarse")
+      const errorMessage = err instanceof Error ? err.message : "Error al registrarse"
+
+      if (errorMessage.includes("404")) {
+        setError(
+          "Error de configuración: El endpoint de registro no existe en la API. " +
+            "Por favor verifica que tu API Laravel tenga configurado el endpoint POST /api/register",
+        )
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
