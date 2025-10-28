@@ -13,21 +13,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
 
   useEffect(() => {
-    console.log("[v0] Admin Layout - Auth state:", { user: user?.nombre, rol: user?.rol, isLoading })
+    console.log("[v0] Admin Layout - Auth state:", {
+      user: user?.nombre,
+      email: user?.email,
+      rol: user?.rol,
+      isLoading,
+      userObject: user,
+    })
   }, [user, isLoading])
 
   useEffect(() => {
     if (!isLoading) {
-      console.log("[v0] Admin Layout - Checking access:", { hasUser: !!user, rol: user?.rol })
+      console.log("[v0] Admin Layout - Checking access:", {
+        hasUser: !!user,
+        rol: user?.rol,
+        isAdmin: user?.rol === "admin",
+      })
+
       if (!user) {
         console.log("[v0] Admin Layout - No user, redirecting to login")
         router.push("/login")
-      } else if (user.rol !== "admin") {
-        console.log("[v0] Admin Layout - User is not admin, redirecting to home")
-        router.push("/")
-      } else {
-        console.log("[v0] Admin Layout - User is admin, allowing access")
+        return
       }
+
+      const isAdmin = user.rol === "admin" || user.rol === "administrador"
+
+      if (!isAdmin) {
+        console.log("[v0] Admin Layout - User is not admin (rol:", user.rol, "), redirecting to home")
+        router.push("/")
+        return
+      }
+
+      console.log("[v0] Admin Layout - User is admin, allowing access")
     }
   }, [user, isLoading, router])
 
@@ -42,8 +59,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
   }
 
-  if (!user || user.rol !== "admin") {
-    return null
+  if (!user || (user.rol !== "admin" && user.rol !== "administrador")) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Redirigiendo...</p>
+          {process.env.NODE_ENV === "development" && (
+            <div className="mt-4 text-xs text-muted-foreground">
+              <p>User: {user?.nombre || "No user"}</p>
+              <p>Role: {user?.rol || "No role"}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
