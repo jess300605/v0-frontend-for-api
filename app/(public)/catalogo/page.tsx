@@ -25,6 +25,7 @@ export default function CatalogoPage() {
   const { user } = useAuth()
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Partial<Producto>>({})
+  const [originalSku, setOriginalSku] = useState<string>("")
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -79,11 +80,13 @@ export default function CatalogoPage() {
   const startEditing = (producto: Producto) => {
     setEditingId(producto.id)
     setEditForm(producto)
+    setOriginalSku(producto.codigo_sku || "")
   }
 
   const cancelEditing = () => {
     setEditingId(null)
     setEditForm({})
+    setOriginalSku("")
   }
 
   const saveProduct = async () => {
@@ -91,20 +94,26 @@ export default function CatalogoPage() {
 
     setSaving(true)
     try {
-      const response = await api.updateProducto(editingId, {
-        codigo_sku: editForm.codigo_sku!,
+      const updateData: any = {
         nombre: editForm.nombre!,
         descripcion: editForm.descripcion || "",
         categoria: editForm.categoria!,
         precio: Number(editForm.precio),
         stock: Number(editForm.stock),
         stock_minimo: Number(editForm.stock_minimo),
-      })
+      }
+
+      if (editForm.codigo_sku !== originalSku) {
+        updateData.codigo_sku = editForm.codigo_sku
+      }
+
+      const response = await api.updateProducto(editingId, updateData)
 
       if (response.success) {
         await loadProductos()
         setEditingId(null)
         setEditForm({})
+        setOriginalSku("")
       }
     } catch (error) {
       console.error("[v0] Error updating product:", error)

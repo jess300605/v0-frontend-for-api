@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 import { CartSheet } from "@/components/cart-sheet"
-import { AdminControlPanel } from "@/components/admin-control-panel"
 
 export function PublicHeader() {
   const { user, logout } = useAuth()
@@ -77,8 +76,6 @@ export function PublicHeader() {
             </Button>
           </div>
 
-          {user?.rol === "admin" && <AdminControlPanel />}
-
           <CartSheet />
 
           <DropdownMenu>
@@ -98,7 +95,7 @@ export function PublicHeader() {
                   {user.rol === "admin" && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link href="/admin">Panel de Administración</Link>
+                        <Link href="/admin/dashboard">Panel de Control</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                     </>
