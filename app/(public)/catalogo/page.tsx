@@ -108,7 +108,9 @@ export default function CatalogoPage() {
         updateData.codigo_sku = editForm.codigo_sku
       }
 
+      console.log("[v0] Updating product with data:", updateData)
       const response = await api.updateProducto(editingId, updateData)
+      console.log("[v0] Update response:", response)
 
       if (response.success) {
         await loadProductos()
@@ -254,6 +256,7 @@ export default function CatalogoPage() {
                 <>
                   <div className="relative aspect-square overflow-hidden bg-gray-100">
                     <Image
+                      key={`${producto.id}-${producto.imagen_url || producto.nombre}`}
                       src={getProductImage(producto) || "/placeholder.svg"}
                       alt={producto.nombre}
                       fill
