@@ -48,10 +48,32 @@ export default function ProductosPage() {
       console.log("[v0] Productos API response:", response)
       console.log("[v0] Response.success:", response.success)
       console.log("[v0] Response.data:", response.data)
+      console.log("[v0] Response.data type:", typeof response.data)
       console.log("[v0] Is response.data an array?", Array.isArray(response.data))
 
       if (response.success && response.data) {
-        const productosArray = Array.isArray(response.data) ? response.data : []
+        let productosArray: Producto[] = []
+
+        // Check if data is directly an array
+        if (Array.isArray(response.data)) {
+          productosArray = response.data
+        }
+        // Check if data is an object with a 'data' property (Laravel pagination)
+        else if (typeof response.data === "object" && "data" in response.data) {
+          console.log("[v0] Found nested data property")
+          productosArray = Array.isArray(response.data.data) ? response.data.data : []
+        }
+        // Check if data is an object with a 'productos' property
+        else if (typeof response.data === "object" && "productos" in response.data) {
+          console.log("[v0] Found productos property")
+          productosArray = Array.isArray(response.data.productos) ? response.data.productos : []
+        }
+        // If data is an object, log its keys to help debug
+        else if (typeof response.data === "object") {
+          console.log("[v0] Response.data keys:", Object.keys(response.data))
+          console.log("[v0] Full response.data:", JSON.stringify(response.data, null, 2))
+        }
+
         console.log("[v0] Productos array length:", productosArray.length)
         console.log("[v0] First producto:", productosArray[0])
         setProductos(productosArray)

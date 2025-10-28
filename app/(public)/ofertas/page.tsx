@@ -5,16 +5,21 @@ import { api, type Producto } from "@/lib/api"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, Star, Percent } from "lucide-react"
+import { ShoppingCart, Star, Percent, Pencil } from "lucide-react"
 import Image from "next/image"
 import { formatPrice, parsePrice } from "@/lib/utils"
 import { getProductImage } from "@/lib/product-images"
 import { useCart } from "@/contexts/cart-context"
+import { useAuth } from "@/lib/auth-context"
+import { ProductDialog } from "@/components/product-dialog"
 
 export default function OfertasPage() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
+  const { user, hasPermission } = useAuth()
+  const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null)
+  const [showProductDialog, setShowProductDialog] = useState(false)
 
   useEffect(() => {
     loadProductos()
@@ -25,11 +30,13 @@ export default function OfertasPage() {
       const response = await api.getProductos()
       let productosData: Producto[] = []
 
-      if (response.success) {
-        if (response.data?.productos && Array.isArray(response.data.productos)) {
-          productosData = response.data.productos
-        } else if (Array.isArray(response.data)) {
+      if (response.success && response.data) {
+        if (Array.isArray(response.data)) {
           productosData = response.data
+        } else if (typeof response.data === "object" && "data" in response.data) {
+          productosData = Array.isArray(response.data.data) ? response.data.data : []
+        } else if (typeof response.data === "object" && "productos" in response.data) {
+          productosData = Array.isArray(response.data.productos) ? response.data.productos : []
         }
       }
 
@@ -44,6 +51,21 @@ export default function OfertasPage() {
   }
 
   const getDiscount = () => Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
+
+  const handleEdit = (producto: Producto) => {
+    setSelectedProduct(producto)
+    setShowProductDialog(true)
+  }
+
+  const handleDialogClose = (refresh: boolean) => {
+    setShowProductDialog(false)
+    setSelectedProduct(null)
+    if (refresh) {
+      loadProductos()
+    }
+  }
+
+  const isAdmin = user && hasPermission("productos", "editar")
 
   if (loading) {
     return (
@@ -97,6 +119,16 @@ export default function OfertasPage() {
                 {producto.stock < 10 && (
                   <Badge className="absolute right-2 top-2 bg-orange-500">Solo {producto.stock} disponibles</Badge>
                 )}
+                {isAdmin && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="absolute bottom-2 right-2 h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                    onClick={() => handleEdit(producto)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
               <CardContent className="p-4">
                 <p className="mb-1 text-sm text-muted-foreground">{producto.categoria}</p>
@@ -126,6 +158,8 @@ export default function OfertasPage() {
           <p className="text-lg text-muted-foreground">No hay ofertas disponibles en este momento</p>
         </div>
       )}
+
+      <ProductDialog open={showProductDialog} onClose={handleDialogClose} product={selectedProduct} />
     </div>
   )
 }

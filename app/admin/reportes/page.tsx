@@ -19,17 +19,37 @@ export default function ReportesPage() {
   const loadReportes = async () => {
     try {
       setIsLoading(true)
+      console.log("[v0] Loading reportes...")
       const [ventasResponse, productosResponse] = await Promise.all([api.getReporteVentas(), api.getReporteProductos()])
 
+      console.log("[v0] Ventas report response:", ventasResponse)
+      console.log("[v0] Productos report response:", productosResponse)
+
       if (ventasResponse.success && ventasResponse.data) {
-        setReporteVentas(ventasResponse.data)
+        let reporteData = ventasResponse.data
+
+        // Check if data is nested
+        if (typeof reporteData === "object" && "data" in reporteData) {
+          reporteData = reporteData.data
+        }
+
+        console.log("[v0] Setting reporte ventas:", reporteData)
+        setReporteVentas(reporteData)
       }
 
       if (productosResponse.success && productosResponse.data) {
-        setReporteProductos(productosResponse.data)
+        let reporteData = productosResponse.data
+
+        // Check if data is nested
+        if (typeof reporteData === "object" && "data" in reporteData) {
+          reporteData = reporteData.data
+        }
+
+        console.log("[v0] Setting reporte productos:", reporteData)
+        setReporteProductos(reporteData)
       }
     } catch (error) {
-      console.error("Error loading reportes:", error)
+      console.error("[v0] Error loading reportes:", error)
     } finally {
       setIsLoading(false)
     }

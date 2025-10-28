@@ -43,10 +43,25 @@ export default function VentasPage() {
       console.log("[v0] Ventas API response:", response)
       console.log("[v0] Response.success:", response.success)
       console.log("[v0] Response.data:", response.data)
+      console.log("[v0] Response.data type:", typeof response.data)
       console.log("[v0] Is response.data an array?", Array.isArray(response.data))
 
       if (response.success && response.data) {
-        const ventasArray = Array.isArray(response.data) ? response.data : []
+        let ventasArray: Venta[] = []
+
+        if (Array.isArray(response.data)) {
+          ventasArray = response.data
+        } else if (typeof response.data === "object" && "data" in response.data) {
+          console.log("[v0] Found nested data property")
+          ventasArray = Array.isArray(response.data.data) ? response.data.data : []
+        } else if (typeof response.data === "object" && "ventas" in response.data) {
+          console.log("[v0] Found ventas property")
+          ventasArray = Array.isArray(response.data.ventas) ? response.data.ventas : []
+        } else if (typeof response.data === "object") {
+          console.log("[v0] Response.data keys:", Object.keys(response.data))
+          console.log("[v0] Full response.data:", JSON.stringify(response.data, null, 2))
+        }
+
         console.log("[v0] Ventas array length:", ventasArray.length)
         console.log("[v0] First venta:", ventasArray[0])
         setVentas(ventasArray)
