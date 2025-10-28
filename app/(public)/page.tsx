@@ -83,10 +83,11 @@ export default function HomePage() {
             <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
               <div className="relative aspect-square overflow-hidden bg-gray-100">
                 <Image
-                  src={getProductImage(producto.nombre) || "/placeholder.svg"}
+                  src={getProductImage(producto) || "/placeholder.svg"}
                   alt={producto.nombre}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
+                  key={`${producto.id}-${producto.url_imagen || producto.nombre}`}
                 />
                 {producto.stock < 10 && <Badge className="absolute right-2 top-2 bg-red-500">Últimas unidades</Badge>}
               </div>
