@@ -55,7 +55,7 @@ export function ProductDetailDialog({ producto, open, onOpenChange }: ProductDet
           <div className="flex flex-col gap-4">
             {/* Price */}
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-primary">${producto.precio.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-primary">${Number(producto.precio || 0).toFixed(2)}</span>
             </div>
 
             {/* Stock Status */}
