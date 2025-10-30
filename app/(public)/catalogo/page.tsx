@@ -14,6 +14,7 @@ import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/lib/auth-context"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { ProductDetailDialog } from "@/components/product-detail-dialog"
 
 export default function CatalogoPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -27,6 +28,8 @@ export default function CatalogoPage() {
   const [editForm, setEditForm] = useState<Partial<Producto>>({})
   const [originalSku, setOriginalSku] = useState<string>("")
   const [saving, setSaving] = useState(false)
+  const [selectedProductDetail, setSelectedProductDetail] = useState<Producto | null>(null)
+  const [showDetailDialog, setShowDetailDialog] = useState(false)
 
   useEffect(() => {
     loadProductos()
@@ -124,6 +127,12 @@ export default function CatalogoPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleImageClick = (producto: Producto) => {
+    if (editingId === producto.id) return // Don't open modal when editing
+    setSelectedProductDetail(producto)
+    setShowDetailDialog(true)
   }
 
   const categories = Array.from(new Set(productos.map((p) => p.categoria)))
@@ -254,7 +263,10 @@ export default function CatalogoPage() {
                 </div>
               ) : (
                 <>
-                  <div className="relative aspect-square overflow-hidden bg-gray-100">
+                  <div
+                    className="relative aspect-square overflow-hidden bg-gray-100 cursor-pointer"
+                    onClick={() => handleImageClick(producto)}
+                  >
                     <Image
                       key={`${producto.id}-${producto.url_imagen || producto.nombre}`}
                       src={getProductImage(producto) || "/placeholder.svg"}
@@ -270,7 +282,10 @@ export default function CatalogoPage() {
                         size="sm"
                         variant="secondary"
                         className="absolute left-2 top-2"
-                        onClick={() => startEditing(producto)}
+                        onClick={(e) => {
+                          e.stopPropagation() // Prevent modal from opening
+                          startEditing(producto)
+                        }}
                       >
                         <Edit className="h-3 w-3" />
                       </Button>
@@ -311,6 +326,13 @@ export default function CatalogoPage() {
           <p className="text-lg text-muted-foreground">No se encontraron productos</p>
         </div>
       )}
+
+      {/* Product Detail Dialog */}
+      <ProductDetailDialog
+        producto={selectedProductDetail}
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
+      />
     </div>
   )
 }

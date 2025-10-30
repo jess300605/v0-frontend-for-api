@@ -12,6 +12,7 @@ import { getProductImage } from "@/lib/product-images"
 import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/lib/auth-context"
 import { ProductDialog } from "@/components/product-dialog"
+import { ProductDetailDialog } from "@/components/product-detail-dialog"
 
 export default function OfertasPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -20,6 +21,8 @@ export default function OfertasPage() {
   const { user, hasPermission } = useAuth()
   const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null)
   const [showProductDialog, setShowProductDialog] = useState(false)
+  const [selectedProductDetail, setSelectedProductDetail] = useState<Producto | null>(null)
+  const [showDetailDialog, setShowDetailDialog] = useState(false)
 
   useEffect(() => {
     loadProductos()
@@ -65,6 +68,11 @@ export default function OfertasPage() {
     }
   }
 
+  const handleImageClick = (producto: Producto) => {
+    setSelectedProductDetail(producto)
+    setShowDetailDialog(true)
+  }
+
   const isAdmin = user && hasPermission("productos", "editar")
 
   if (loading) {
@@ -108,7 +116,10 @@ export default function OfertasPage() {
 
           return (
             <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
-              <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <div
+                className="relative aspect-square overflow-hidden bg-gray-100 cursor-pointer"
+                onClick={() => handleImageClick(producto)}
+              >
                 <Image
                   key={`${producto.id}-${producto.url_imagen || "default"}`}
                   src={getProductImage(producto) || "/placeholder.svg"}
@@ -125,7 +136,10 @@ export default function OfertasPage() {
                     size="sm"
                     variant="secondary"
                     className="absolute bottom-2 right-2 h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                    onClick={() => handleEdit(producto)}
+                    onClick={(e) => {
+                      e.stopPropagation() // Prevent modal from opening
+                      handleEdit(producto)
+                    }}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -161,6 +175,11 @@ export default function OfertasPage() {
       )}
 
       <ProductDialog open={showProductDialog} onClose={handleDialogClose} product={selectedProduct} />
+      <ProductDetailDialog
+        producto={selectedProductDetail}
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
+      />
     </div>
   )
 }

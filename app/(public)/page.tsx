@@ -10,11 +10,14 @@ import Link from "next/link"
 import Image from "next/image"
 import { getProductImage } from "@/lib/product-images"
 import { useCart } from "@/contexts/cart-context"
+import { ProductDetailDialog } from "@/components/product-detail-dialog"
 
 export default function HomePage() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const { addToCart } = useCart()
+  const [selectedProduct, setSelectedProduct] = useState<Producto | null>(null)
+  const [showDetailDialog, setShowDetailDialog] = useState(false)
 
   useEffect(() => {
     loadProductos()
@@ -42,6 +45,11 @@ export default function HomePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleImageClick = (producto: Producto) => {
+    setSelectedProduct(producto)
+    setShowDetailDialog(true)
   }
 
   if (loading) {
@@ -81,7 +89,10 @@ export default function HomePage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {productos.slice(0, 8).map((producto) => (
             <Card key={producto.id} className="group overflow-hidden transition-shadow hover:shadow-lg">
-              <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <div
+                className="relative aspect-square overflow-hidden bg-gray-100 cursor-pointer"
+                onClick={() => handleImageClick(producto)}
+              >
                 <Image
                   src={getProductImage(producto) || "/placeholder.svg"}
                   alt={producto.nombre}
@@ -132,6 +143,8 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      <ProductDetailDialog producto={selectedProduct} open={showDetailDialog} onOpenChange={setShowDetailDialog} />
     </div>
   )
 }
