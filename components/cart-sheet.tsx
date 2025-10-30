@@ -46,7 +46,8 @@ export function CartSheet() {
                   <div key={item.producto.id} className="flex gap-4">
                     <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
                       <Image
-                        src={getProductImage(item.producto.nombre) || "/placeholder.svg"}
+                        key={`cart-${item.producto.id}-${item.producto.url_imagen || "default"}`}
+                        src={getProductImage(item.producto) || "/placeholder.svg"}
                         alt={item.producto.nombre}
                         fill
                         className="object-cover"
