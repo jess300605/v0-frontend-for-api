@@ -41,7 +41,10 @@ export default function CatalogoPage() {
 
   const loadProductos = async () => {
     try {
+      console.log("[v0] Catalog: Loading productos at", new Date().toISOString())
       const response = await api.getProductos()
+      console.log("[v0] Catalog: API response:", response)
+
       let productosData: Producto[] = []
 
       if (response.success) {
@@ -52,7 +55,11 @@ export default function CatalogoPage() {
         }
       }
 
+      console.log("[v0] Catalog: Total productos from API:", productosData.length)
       const activeProducts = productosData.filter((p) => p.activo && p.stock > 0)
+      console.log("[v0] Catalog: Active productos with stock:", activeProducts.length)
+      console.log("[v0] Catalog: Filtered out productos:", productosData.length - activeProducts.length)
+
       setProductos(activeProducts)
       setFilteredProductos(activeProducts)
     } catch (error) {

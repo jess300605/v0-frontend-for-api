@@ -44,6 +44,9 @@ export default function ProductosPage() {
     try {
       setIsLoading(true)
       console.log("[v0] Loading productos...")
+      const timestamp = new Date().getTime()
+      console.log("[v0] Request timestamp:", timestamp)
+
       const response = await api.getProductos()
       console.log("[v0] Productos API response:", response)
       console.log("[v0] Response.success:", response.success)
@@ -76,6 +79,12 @@ export default function ProductosPage() {
 
         console.log("[v0] Productos array length:", productosArray.length)
         console.log("[v0] First producto:", productosArray[0])
+        console.log("[v0] Last producto:", productosArray[productosArray.length - 1])
+        console.log(
+          "[v0] All producto IDs:",
+          productosArray.map((p) => p.id),
+        )
+
         setProductos(productosArray)
         setFilteredProductos(productosArray)
       } else {
@@ -124,7 +133,10 @@ export default function ProductosPage() {
     setSelectedProduct(null)
     if (refresh) {
       console.log("[v0] Refreshing productos list...")
-      loadProductos()
+      setSearchTerm("")
+      setTimeout(() => {
+        loadProductos()
+      }, 500)
     }
   }
 
