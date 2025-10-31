@@ -304,7 +304,7 @@ class ApiClient {
 
   async createProducto(data: ProductoInput): Promise<ApiResponse<Producto>> {
     console.log("[v0] Creating product with data:", JSON.stringify(data, null, 2))
-    console.log("[v0] Field types:", {
+    console.log("[v0] Data types:", {
       codigo_sku: typeof data.codigo_sku,
       nombre: typeof data.nombre,
       categoria: typeof data.categoria,
@@ -314,106 +314,15 @@ class ApiClient {
       url_imagen: typeof data.url_imagen,
       activo: typeof data.activo,
     })
-    console.log("[v0] Request URL:", `${API_BASE_URL}/productos`)
+    console.log("[v0] POST URL:", `${API_BASE_URL}/productos`)
 
-    const formData = new FormData()
-    formData.append("codigo_sku", data.codigo_sku)
-    formData.append("nombre", data.nombre)
-    formData.append("categoria", data.categoria)
-    formData.append("precio", data.precio.toString())
-    formData.append("stock", data.stock.toString())
-    formData.append("stock_minimo", data.stock_minimo.toString())
+    const response = await this.request<Producto>("/productos", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
 
-    if (data.descripcion) {
-      formData.append("descripcion", data.descripcion)
-    }
-
-    if (data.url_imagen) {
-      formData.append("url_imagen", data.url_imagen)
-    }
-
-    if (data.activo !== undefined) {
-      formData.append("activo", data.activo ? "1" : "0")
-    }
-
-    console.log("[v0] Sending as FormData with fields:", Array.from(formData.keys()))
-
-    try {
-      const url = `${API_BASE_URL}/productos`
-      const token = this.getToken()
-      const headers: HeadersInit = {
-        Accept: "application/json",
-      }
-
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`
-      }
-
-      console.log("[v0] Making FormData POST request to:", url)
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: formData,
-      })
-
-      console.log(`[v0] Response status: ${response.status} ${response.statusText}`)
-
-      const contentType = response.headers.get("content-type")
-      const hasJsonContent = contentType && contentType.includes("application/json")
-
-      let responseData: any = {}
-
-      if (hasJsonContent) {
-        const text = await response.text()
-        console.log(`[v0] Response text:`, text)
-
-        if (text) {
-          try {
-            responseData = JSON.parse(text)
-          } catch (e) {
-            console.error("[v0] Failed to parse JSON:", e)
-            responseData = { success: false, message: "Invalid JSON response" }
-          }
-        }
-      } else {
-        console.log("[v0] Response is not JSON, content-type:", contentType)
-        const text = await response.text()
-        console.log("[v0] Response text:", text)
-        responseData = { success: false, message: `Non-JSON response: ${text}` }
-      }
-
-      console.log("[v0] Create product response:", responseData)
-
-      if (!response.ok) {
-        console.error("[v0] Error en respuesta:", responseData)
-        if (responseData.errors) {
-          console.error("[v0] Validation errors:", responseData.errors)
-          const errorMessages = Object.entries(responseData.errors)
-            .map(([field, messages]) => `${field}: ${(messages as string[]).join(", ")}`)
-            .join("\n")
-          throw new Error(`Errores de validación:\n${errorMessages}`)
-        }
-        throw new Error(responseData.message || `Error ${response.status}: ${response.statusText}`)
-      }
-
-      return responseData
-    } catch (error) {
-      console.error("[v0] Create product error:", error)
-      if (error instanceof TypeError && error.message === "Failed to fetch") {
-        throw new Error(
-          `No se pudo conectar con el servidor API.\n\n` +
-            `URL intentada: ${API_BASE_URL}/productos\n\n` +
-            `Posibles causas:\n` +
-            `1. El servidor Laravel no está corriendo (ejecuta: php artisan serve)\n` +
-            `2. La URL de la API es incorrecta (verifica NEXT_PUBLIC_API_URL en .env.local)\n` +
-            `3. Problema de CORS en el servidor Laravel\n` +
-            `4. El puerto 8000 está bloqueado o en uso\n\n` +
-            `Verifica la consola del navegador para más detalles.`,
-        )
-      }
-      throw error
-    }
+    console.log("[v0] Create product response:", response)
+    return response
   }
 
   async updateProducto(id: number, data: ProductoInput): Promise<ApiResponse<Producto>> {
