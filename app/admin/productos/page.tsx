@@ -119,9 +119,11 @@ export default function ProductosPage() {
   }
 
   const handleDialogClose = (refresh: boolean) => {
+    console.log("[v0] Dialog closing, refresh:", refresh)
     setShowProductDialog(false)
     setSelectedProduct(null)
     if (refresh) {
+      console.log("[v0] Refreshing productos list...")
       loadProductos()
     }
   }

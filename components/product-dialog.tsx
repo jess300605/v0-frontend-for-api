@@ -118,14 +118,20 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
       console.log("[v0] Sending product data:", data)
       console.log("[v0] Product ID:", product?.id)
       console.log("[v0] Original codigo:", originalCodigo, "New codigo:", codigoTrimmed)
+      console.log("[v0] Is creating new product:", !product)
 
       const response = product ? await api.updateProducto(product.id, data) : await api.createProducto(data)
 
       console.log("[v0] Response received:", response)
+      console.log("[v0] Response.success:", response.success)
+      console.log("[v0] Response.data:", response.data)
+      console.log("[v0] Response.message:", response.message)
 
       if (response.success) {
+        console.log("[v0] Product saved successfully, closing dialog with refresh=true")
         onClose(true)
       } else {
+        console.error("[v0] Product save failed:", response.message)
         setError(response.message || "Error al guardar el producto")
       }
     } catch (err) {
