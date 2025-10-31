@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ShoppingCart, Search, Star, Edit, Save, X } from "lucide-react"
+import { ShoppingCart, Search, Star, Edit, Save, X, Plus } from "lucide-react"
 import Image from "next/image"
 import { getProductImage } from "@/lib/product-images"
 import { useCart } from "@/contexts/cart-context"
@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth-context"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ProductDetailDialog } from "@/components/product-detail-dialog"
+import { ProductDialog } from "@/components/product-dialog"
 
 export default function CatalogoPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -30,6 +31,7 @@ export default function CatalogoPage() {
   const [saving, setSaving] = useState(false)
   const [selectedProductDetail, setSelectedProductDetail] = useState<Producto | null>(null)
   const [showDetailDialog, setShowDetailDialog] = useState(false)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   useEffect(() => {
     loadProductos()
@@ -142,8 +144,15 @@ export default function CatalogoPage() {
     setShowDetailDialog(true)
   }
 
+  const handleCreateDialogClose = (refresh?: boolean) => {
+    setShowCreateDialog(false)
+    if (refresh) {
+      loadProductos()
+    }
+  }
+
   const categories = Array.from(new Set(productos.map((p) => p.categoria)))
-  const isAdmin = user?.rol === "admin"
+  const isAdmin = user?.rol === "admin" || user?.rol === "administrador"
 
   if (loading) {
     return (
@@ -166,7 +175,15 @@ export default function CatalogoPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-4xl font-bold">Catálogo de Productos</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-4xl font-bold">Catálogo de Productos</h1>
+        {isAdmin && (
+          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Agregar Producto
+          </Button>
+        )}
+      </div>
 
       {/* Filters */}
       <div className="mb-8 flex flex-col gap-4 md:flex-row">
@@ -340,6 +357,9 @@ export default function CatalogoPage() {
         open={showDetailDialog}
         onOpenChange={setShowDetailDialog}
       />
+
+      {/* ProductDialog for creating new products */}
+      <ProductDialog open={showCreateDialog} onClose={handleCreateDialogClose} />
     </div>
   )
 }
