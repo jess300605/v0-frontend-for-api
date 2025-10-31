@@ -19,6 +19,8 @@ import { api, type Producto } from "@/lib/api"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
+import { useAuth } from "@/lib/auth-context"
+import Link from "next/link"
 
 interface ProductDialogProps {
   open: boolean
@@ -27,6 +29,8 @@ interface ProductDialogProps {
 }
 
 export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
+  const { isAuthenticated, user } = useAuth()
+
   const [formData, setFormData] = useState({
     codigo: "",
     nombre: "",
@@ -78,6 +82,12 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    if (!isAuthenticated) {
+      setError("Debes iniciar sesión para crear o editar productos")
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -114,7 +124,6 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         activo: formData.activo,
       }
 
-      // Only send codigo_sku if it's a new product or if it has changed
       const codigoTrimmed = formData.codigo.trim()
       if (!product || codigoTrimmed !== originalCodigo) {
         data.codigo_sku = codigoTrimmed
@@ -157,6 +166,19 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
             {product ? "Actualiza la información del producto" : "Agrega un nuevo producto al inventario"}
           </DialogDescription>
         </DialogHeader>
+
+        {!isAuthenticated && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Autenticación Requerida</AlertTitle>
+            <AlertDescription>
+              Debes iniciar sesión para crear o editar productos.{" "}
+              <Link href="/login" className="underline font-medium">
+                Ir a Login
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
