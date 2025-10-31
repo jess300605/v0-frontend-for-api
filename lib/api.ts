@@ -158,7 +158,12 @@ export interface ReporteProductos {
 class ApiClient {
   private getToken(): string | null {
     if (typeof window === "undefined") return null
-    return localStorage.getItem("auth_token")
+    const token = localStorage.getItem("auth_token")
+    console.log(
+      "[v0] Getting token from localStorage:",
+      token ? `Token exists (${token.substring(0, 20)}...)` : "No token found",
+    )
+    return token
   }
 
   private getHeaders(): HeadersInit {
@@ -170,29 +175,48 @@ class ApiClient {
     const token = this.getToken()
     if (token) {
       headers["Authorization"] = `Bearer ${token}`
+      console.log("[v0] Authorization header added to request")
+    } else {
+      console.warn("[v0] ⚠️ NO TOKEN FOUND - Request will be sent without authentication!")
     }
 
+    console.log("[v0] Request headers:", headers)
     return headers
   }
 
   async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`
-      console.log(`[v0] Making request to: ${url}`)
+      console.log("[v0] ========== API REQUEST ==========")
+      console.log(`[v0] URL: ${url}`)
       console.log(`[v0] Method: ${options.method || "GET"}`)
-      console.log(`[v0] API_BASE_URL: ${API_BASE_URL}`)
-      console.log(`[v0] NEXT_PUBLIC_API_URL env var: ${process.env.NEXT_PUBLIC_API_URL}`)
+      console.log(`[v0] Has token: ${this.getToken() ? "YES ✓" : "NO ✗"}`)
+
+      const headers = {
+        ...this.getHeaders(),
+        ...options.headers,
+      }
+
+      console.log(`[v0] Final headers:`, headers)
+      console.log(`[v0] Body:`, options.body)
+      console.log("[v0] ===================================")
 
       const response = await fetch(url, {
         ...options,
-        headers: {
-          ...this.getHeaders(),
-          ...options.headers,
-        },
+        headers,
       })
 
       console.log(`[v0] Response status: ${response.status} ${response.statusText}`)
-      console.log(`[v0] Response headers:`, Object.fromEntries(response.headers.entries()))
+
+      if (response.status === 401) {
+        console.error("[v0] ❌ 401 UNAUTHORIZED - Token inválido o expirado")
+        throw new Error("No estás autenticado. Por favor inicia sesión nuevamente.")
+      }
+
+      if (response.status === 403) {
+        console.error("[v0] ❌ 403 FORBIDDEN - No tienes permisos para esta acción")
+        throw new Error("No tienes permisos para realizar esta acción.")
+      }
 
       const contentType = response.headers.get("content-type")
       const hasJsonContent = contentType && contentType.includes("application/json")
