@@ -179,6 +179,8 @@ class ApiClient {
       const url = `${API_BASE_URL}${endpoint}`
       console.log(`[v0] Making request to: ${url}`)
       console.log(`[v0] Method: ${options.method || "GET"}`)
+      console.log(`[v0] API_BASE_URL: ${API_BASE_URL}`)
+      console.log(`[v0] NEXT_PUBLIC_API_URL env var: ${process.env.NEXT_PUBLIC_API_URL}`)
 
       const response = await fetch(url, {
         ...options,
@@ -232,6 +234,25 @@ class ApiClient {
       return data
     } catch (error) {
       console.error("[v0] API Error:", error)
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        const detailedError = new Error(
+          `No se pudo conectar con el servidor API.\n\n` +
+            `URL intentada: ${API_BASE_URL}${endpoint}\n\n` +
+            `Posibles causas:\n` +
+            `1. El servidor Laravel no está corriendo (ejecuta: php artisan serve)\n` +
+            `2. La URL de la API es incorrecta (verifica NEXT_PUBLIC_API_URL en .env.local)\n` +
+            `3. Problema de CORS en el servidor Laravel\n` +
+            `4. El puerto 8000 está bloqueado o en uso\n\n` +
+            `Verifica la consola del navegador para más detalles.`,
+        )
+        console.error("[v0] Connection error details:", {
+          apiBaseUrl: API_BASE_URL,
+          endpoint,
+          fullUrl: `${API_BASE_URL}${endpoint}`,
+          envVar: process.env.NEXT_PUBLIC_API_URL,
+        })
+        throw detailedError
+      }
       throw error
     }
   }

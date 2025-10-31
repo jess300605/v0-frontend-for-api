@@ -16,7 +16,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { api, type Producto } from "@/lib/api"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 
 interface ProductDialogProps {
   open: boolean
@@ -155,7 +156,9 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <Alert variant="destructive">
-              <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription className="whitespace-pre-line text-sm mt-2">{error}</AlertDescription>
             </Alert>
           )}
 
