@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { api, type Producto } from "@/lib/api"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 
 interface ProductDialogProps {
   open: boolean
@@ -35,6 +36,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     stock_actual: "",
     stock_minimo: "",
     url_imagen: "",
+    activo: true,
   })
   const [originalCodigo, setOriginalCodigo] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -53,6 +55,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         stock_actual: product.stock?.toString() || "0",
         stock_minimo: product.stock_minimo?.toString() || "0",
         url_imagen: product.url_imagen || "",
+        activo: product.activo ?? true,
       })
       setOriginalCodigo(codigoValue)
     } else {
@@ -65,6 +68,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         stock_actual: "",
         stock_minimo: "",
         url_imagen: "",
+        activo: true,
       })
       setOriginalCodigo("")
     }
@@ -107,6 +111,7 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         stock: stock,
         stock_minimo: stock_minimo,
         url_imagen: formData.url_imagen.trim() || undefined,
+        activo: formData.activo,
       }
 
       // Only send codigo_sku if it's a new product or if it has changed
@@ -273,6 +278,21 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
                 placeholder="0"
               />
             </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="activo" className="text-base">
+                Producto Activo
+              </Label>
+              <p className="text-sm text-muted-foreground">Los productos activos se muestran en el catálogo público</p>
+            </div>
+            <Switch
+              id="activo"
+              checked={formData.activo}
+              onCheckedChange={(checked) => setFormData({ ...formData, activo: checked })}
+              disabled={isLoading}
+            />
           </div>
 
           <DialogFooter>

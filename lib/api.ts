@@ -57,6 +57,7 @@ export interface ProductoInput {
   stock: number
   stock_minimo: number
   url_imagen?: string
+  activo?: boolean
 }
 
 export interface Venta {
@@ -302,10 +303,27 @@ class ApiClient {
   }
 
   async createProducto(data: ProductoInput): Promise<ApiResponse<Producto>> {
-    return this.request<Producto>("/productos", {
+    console.log("[v0] Creating product with data:", JSON.stringify(data, null, 2))
+    console.log("[v0] Field types:", {
+      codigo_sku: typeof data.codigo_sku,
+      nombre: typeof data.nombre,
+      categoria: typeof data.categoria,
+      precio: typeof data.precio,
+      stock: typeof data.stock,
+      stock_minimo: typeof data.stock_minimo,
+      url_imagen: typeof data.url_imagen,
+      activo: typeof data.activo,
+    })
+    console.log("[v0] Request URL:", `${API_BASE_URL}/productos`)
+    console.log("[v0] Request headers:", this.getHeaders())
+
+    const response = await this.request<Producto>("/productos", {
       method: "POST",
       body: JSON.stringify(data),
     })
+
+    console.log("[v0] Create product response:", response)
+    return response
   }
 
   async updateProducto(id: number, data: ProductoInput): Promise<ApiResponse<Producto>> {
@@ -319,6 +337,7 @@ class ApiClient {
       stock: typeof data.stock,
       stock_minimo: typeof data.stock_minimo,
       url_imagen: typeof data.url_imagen,
+      activo: typeof data.activo,
     })
 
     const response = await this.request<Producto>(`/productos/${id}`, {
