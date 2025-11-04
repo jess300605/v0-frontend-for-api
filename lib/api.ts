@@ -322,11 +322,33 @@ class ApiClient {
   }
 
   async getProductos(): Promise<ApiResponse<Producto[]>> {
-    return this.request<Producto[]>("/productos")
+    const response = await this.request<any>("/productos")
+    console.log("[v0] getProductos raw response:", response)
+
+    // Backend returns: { success: true, data: { productos: [...], paginacion: {...} } }
+    if (response.success && response.data && response.data.productos) {
+      return {
+        ...response,
+        data: response.data.productos,
+      }
+    }
+
+    return response
   }
 
   async getProducto(id: number): Promise<ApiResponse<Producto>> {
-    return this.request<Producto>(`/productos/${id}`)
+    const response = await this.request<any>(`/productos/${id}`)
+    console.log("[v0] getProducto raw response:", response)
+
+    // Backend returns: { success: true, data: { producto: {...}, estado_stock: {...} } }
+    if (response.success && response.data && response.data.producto) {
+      return {
+        ...response,
+        data: response.data.producto,
+      }
+    }
+
+    return response
   }
 
   async createProducto(data: ProductoInput): Promise<ApiResponse<Producto>> {
@@ -343,12 +365,21 @@ class ApiClient {
     })
     console.log("[v0] POST URL:", `${API_BASE_URL}/productos`)
 
-    const response = await this.request<Producto>("/productos", {
+    const response = await this.request<any>("/productos", {
       method: "POST",
       body: JSON.stringify(data),
     })
 
-    console.log("[v0] Create product response:", response)
+    console.log("[v0] Create product raw response:", response)
+
+    // Backend returns: { success: true, message: "...", data: { producto: {...}, id: ... } }
+    if (response.success && response.data && response.data.producto) {
+      return {
+        ...response,
+        data: response.data.producto,
+      }
+    }
+
     return response
   }
 
@@ -366,12 +397,21 @@ class ApiClient {
       activo: typeof data.activo,
     })
 
-    const response = await this.request<Producto>(`/productos/${id}`, {
+    const response = await this.request<any>(`/productos/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     })
 
-    console.log("[v0] Update response:", response)
+    console.log("[v0] Update product raw response:", response)
+
+    // Backend returns: { success: true, message: "...", data: { producto: {...} } }
+    if (response.success && response.data && response.data.producto) {
+      return {
+        ...response,
+        data: response.data.producto,
+      }
+    }
+
     return response
   }
 
