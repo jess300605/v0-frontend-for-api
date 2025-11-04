@@ -95,6 +95,8 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
       if (response.success) {
         setConnectionStatus("success")
         setConnectionMessage(`Conexión exitosa! Backend respondiendo correctamente.`)
+        setError("")
+        setFieldErrors({})
       } else {
         setConnectionStatus("error")
         setConnectionMessage("El backend respondió pero con un error")
