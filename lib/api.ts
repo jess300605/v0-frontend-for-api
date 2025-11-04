@@ -374,7 +374,7 @@ class ApiClient {
   }
 
   async getProductos(): Promise<ApiResponse<Producto[]>> {
-    const response = await this.request<any>("/productos")
+    const response = await this.request<any>("/productos?ordenar_por=created_at&orden=desc&por_pagina=100")
     console.log("[v0] getProductos raw response:", response)
 
     // Backend returns: { success: true, data: { productos: [...], paginacion: {...} } }
