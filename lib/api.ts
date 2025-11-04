@@ -201,12 +201,50 @@ class ApiClient {
       console.log(`[v0] Body:`, options.body)
       console.log("[v0] ===================================")
 
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      })
+      let response: Response
+      try {
+        response = await fetch(url, {
+          ...options,
+          headers,
+        })
+        console.log(`[v0] ✓ Fetch successful - Response received`)
+      } catch (fetchError) {
+        console.error("[v0] ❌ FETCH FAILED - Network error:", fetchError)
+        console.error("[v0] Error type:", fetchError instanceof TypeError ? "TypeError" : typeof fetchError)
+        console.error("[v0] Error message:", (fetchError as Error).message)
+
+        throw new Error(
+          `No se pudo conectar con el servidor API.\n\n` +
+            `URL intentada: ${url}\n\n` +
+            `Error: ${(fetchError as Error).message}\n\n` +
+            `Posibles causas:\n` +
+            `1. El servidor Laravel no está corriendo (ejecuta: php artisan serve --host=0.0.0.0 --port=8000)\n` +
+            `2. La URL de la API es incorrecta (verifica NEXT_PUBLIC_API_URL en .env.local)\n` +
+            `3. Problema de CORS en el servidor Laravel\n` +
+            `4. El puerto 8000 está bloqueado o en uso\n\n` +
+            `Diagnóstico:\n` +
+            `- Página actual: ${typeof window !== "undefined" ? window.location.href : "N/A"}\n` +
+            `- API configurada: ${API_BASE_URL}\n\n` +
+            `¿Estás accediendo desde localhost:3000?`,
+        )
+      }
 
       console.log(`[v0] Response status: ${response.status} ${response.statusText}`)
+      console.log(`[v0] Response headers:`, Object.fromEntries(response.headers.entries()))
+
+      if (response.type === "opaque" || response.type === "opaqueredirect") {
+        console.error("[v0] ❌ CORS ERROR - Response is opaque, CORS is blocking the response")
+        throw new Error(
+          `Error de CORS detectado.\n\n` +
+            `El servidor Laravel está bloqueando las peticiones desde el frontend.\n\n` +
+            `Solución:\n` +
+            `1. Verifica que config/cors.php en Laravel tenga:\n` +
+            `   'allowed_origins' => ['http://localhost:3000']\n` +
+            `   'allowed_methods' => ['*']\n` +
+            `   'allowed_headers' => ['*']\n` +
+            `2. Asegúrate de que el middleware CORS esté habilitado en Laravel`,
+        )
+      }
 
       if (response.status === 401) {
         console.error("[v0] ❌ 401 UNAUTHORIZED - Token inválido o expirado")
@@ -218,34 +256,62 @@ class ApiClient {
         throw new Error("No tienes permisos para realizar esta acción.")
       }
 
+      if (response.status === 404) {
+        console.error("[v0] ❌ 404 NOT FOUND - El endpoint no existe en el backend")
+        throw new Error(
+          `Endpoint no encontrado: ${endpoint}\n\n` +
+            `El backend Laravel no tiene configurada esta ruta.\n\n` +
+            `Verifica que en routes/api.php existan las rutas para productos:\n` +
+            `Route::apiResource('productos', ProductoController::class);`,
+        )
+      }
+
+      if (response.status === 500) {
+        console.error("[v0] ❌ 500 INTERNAL SERVER ERROR - Error en el servidor Laravel")
+        const text = await response.text()
+        console.error("[v0] Server error response:", text)
+        throw new Error(
+          `Error interno del servidor Laravel.\n\n` +
+            `Revisa los logs del servidor Laravel para más detalles.\n` +
+            `El error puede estar en el ProductoController o en la base de datos.`,
+        )
+      }
+
       const contentType = response.headers.get("content-type")
       const hasJsonContent = contentType && contentType.includes("application/json")
+
+      console.log(`[v0] Content-Type: ${contentType}`)
+      console.log(`[v0] Has JSON content: ${hasJsonContent}`)
 
       let data: any = {}
 
       if (hasJsonContent) {
         const text = await response.text()
-        console.log(`[v0] Response text:`, text)
+        console.log(`[v0] Response text (first 500 chars):`, text.substring(0, 500))
 
         if (text) {
           try {
             data = JSON.parse(text)
+            console.log(`[v0] ✓ JSON parsed successfully`)
           } catch (e) {
-            console.error("[v0] Failed to parse JSON:", e)
-            data = { success: false, message: "Invalid JSON response" }
+            console.error("[v0] ❌ Failed to parse JSON:", e)
+            console.error("[v0] Raw response:", text)
+            data = { success: false, message: "Invalid JSON response from server" }
           }
         }
       } else {
-        console.log("[v0] Response is not JSON, content-type:", contentType)
+        console.log("[v0] ⚠️ Response is not JSON, content-type:", contentType)
         const text = await response.text()
-        console.log("[v0] Response text:", text)
+        console.log("[v0] Non-JSON response:", text)
         data = { success: false, message: `Non-JSON response: ${text}` }
       }
 
-      console.log(`[v0] API ${endpoint}:`, data)
+      console.log(`[v0] Parsed data:`, data)
 
       if (!response.ok) {
-        console.error("[v0] Error en respuesta:", data)
+        console.error("[v0] ❌ Response not OK - Status:", response.status)
+        console.error("[v0] Error data:", data)
+
         if (data.errors) {
           console.error("[v0] Validation errors:", data.errors)
           const errorMessages = Object.entries(data.errors)
@@ -256,28 +322,14 @@ class ApiClient {
         throw new Error(data.message || `Error ${response.status}: ${response.statusText}`)
       }
 
+      console.log("[v0] ✓ Request successful")
       return data
     } catch (error) {
-      console.error("[v0] API Error:", error)
-      if (error instanceof TypeError && error.message === "Failed to fetch") {
-        const detailedError = new Error(
-          `No se pudo conectar con el servidor API.\n\n` +
-            `URL intentada: ${API_BASE_URL}${endpoint}\n\n` +
-            `Posibles causas:\n` +
-            `1. El servidor Laravel no está corriendo (ejecuta: php artisan serve)\n` +
-            `2. La URL de la API es incorrecta (verifica NEXT_PUBLIC_API_URL en .env.local)\n` +
-            `3. Problema de CORS en el servidor Laravel\n` +
-            `4. El puerto 8000 está bloqueado o en uso\n\n` +
-            `Verifica la consola del navegador para más detalles.`,
-        )
-        console.error("[v0] Connection error details:", {
-          apiBaseUrl: API_BASE_URL,
-          endpoint,
-          fullUrl: `${API_BASE_URL}${endpoint}`,
-          envVar: process.env.NEXT_PUBLIC_API_URL,
-        })
-        throw detailedError
-      }
+      console.error("[v0] ========== API ERROR ==========")
+      console.error("[v0] Error caught:", error)
+      console.error("[v0] Error type:", error instanceof Error ? error.constructor.name : typeof error)
+      console.error("[v0] Error message:", error instanceof Error ? error.message : String(error))
+      console.error("[v0] ==================================")
       throw error
     }
   }

@@ -112,39 +112,59 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    console.log("[v0] === PRODUCT SUBMIT STARTED ===")
+    console.log("[v0] Form data:", formData)
+    console.log("[v0] Is authenticated:", isAuthenticated)
+    console.log("[v0] User:", user)
+    console.log("[v0] Product (editing):", product)
+
     setError("")
     setFieldErrors({})
 
     if (!isAuthenticated) {
-      setError("Debes iniciar sesión para crear o editar productos")
+      const authError = "Debes iniciar sesión para crear o editar productos"
+      console.error("[v0] Authentication error:", authError)
+      setError(authError)
       return
     }
 
     setIsLoading(true)
+    console.log("[v0] Loading state set to true")
 
     try {
+      console.log("[v0] Parsing form values...")
       const precio = Number.parseFloat(formData.precio)
       const stock = Number.parseInt(formData.stock_actual)
       const stock_minimo = Number.parseInt(formData.stock_minimo)
 
+      console.log("[v0] Parsed values:", { precio, stock, stock_minimo })
+
       if (isNaN(precio) || precio < 0) {
-        setError("El precio debe ser un número válido mayor o igual a 0")
+        const priceError = "El precio debe ser un número válido mayor o igual a 0"
+        console.error("[v0] Price validation error:", priceError)
+        setError(priceError)
         setIsLoading(false)
         return
       }
 
       if (isNaN(stock) || stock < 0) {
-        setError("El stock debe ser un número válido mayor o igual a 0")
+        const stockError = "El stock debe ser un número válido mayor o igual a 0"
+        console.error("[v0] Stock validation error:", stockError)
+        setError(stockError)
         setIsLoading(false)
         return
       }
 
       if (isNaN(stock_minimo) || stock_minimo < 0) {
-        setError("El stock mínimo debe ser un número válido mayor o igual a 0")
+        const minStockError = "El stock mínimo debe ser un número válido mayor o igual a 0"
+        console.error("[v0] Min stock validation error:", minStockError)
+        setError(minStockError)
         setIsLoading(false)
         return
       }
 
+      console.log("[v0] Building request data...")
       const data: any = {
         nombre: formData.nombre.trim(),
         descripcion: formData.descripcion.trim() || undefined,
@@ -161,18 +181,38 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
         data.codigo_sku = codigoTrimmed
       }
 
+      console.log("[v0] Request data prepared:", data)
+      console.log("[v0] Making API call...")
+
       const response = product ? await api.updateProducto(product.id, data) : await api.createProducto(data)
 
+      console.log("[v0] API response received:", response)
+
       if (response.success) {
+        console.log("[v0] ✓ Product saved successfully!")
+        console.log("[v0] Closing dialog and refreshing list...")
         onClose(true)
       } else {
-        setError(response.message || "Error al guardar el producto")
+        const errorMsg = response.message || "Error al guardar el producto"
+        console.error("[v0] ✗ API returned error:", errorMsg)
+        setError(errorMsg)
       }
     } catch (err) {
-      console.error("[v0] Error saving product:", err)
-      const errorMessage = err instanceof Error ? err.message : "Error al guardar el producto"
+      console.error("[v0] ✗✗✗ EXCEPTION CAUGHT ✗✗✗")
+      console.error("[v0] Error object:", err)
+      console.error("[v0] Error type:", typeof err)
+      console.error("[v0] Error constructor:", err?.constructor?.name)
+
+      if (err instanceof Error) {
+        console.error("[v0] Error message:", err.message)
+        console.error("[v0] Error stack:", err.stack)
+      }
+
+      const errorMessage = err instanceof Error ? err.message : "Error desconocido al guardar el producto"
+      console.error("[v0] Final error message:", errorMessage)
 
       if (errorMessage.includes("Errores de validación:")) {
+        console.log("[v0] Parsing validation errors...")
         const lines = errorMessage.split("\n")
         const errors: Record<string, string> = {}
 
@@ -190,6 +230,8 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
           }
         })
 
+        console.log("[v0] Parsed field errors:", errors)
+
         if (Object.keys(errors).length > 0) {
           setFieldErrors(errors)
           setError("Por favor corrige los errores en los campos marcados")
@@ -199,8 +241,12 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
       } else {
         setError(errorMessage)
       }
+
+      console.log("[v0] Error state updated")
     } finally {
       setIsLoading(false)
+      console.log("[v0] Loading state set to false")
+      console.log("[v0] === PRODUCT SUBMIT ENDED ===")
     }
   }
 
