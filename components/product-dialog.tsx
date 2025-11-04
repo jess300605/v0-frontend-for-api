@@ -91,6 +91,13 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     setIsLoading(true)
 
     try {
+      console.log("[v0] ========== PRODUCT DIALOG SUBMIT ==========")
+      console.log("[v0] Current window location:", typeof window !== "undefined" ? window.location.href : "SSR")
+      console.log("[v0] API Base URL:", process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api")
+      console.log("[v0] Is authenticated:", isAuthenticated)
+      console.log("[v0] User:", user)
+      console.log("[v0] =============================================")
+
       const precio = Number.parseFloat(formData.precio)
       const stock = Number.parseInt(formData.stock_actual)
       const stock_minimo = Number.parseInt(formData.stock_minimo)
@@ -151,7 +158,12 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
       }
     } catch (err) {
       console.error("[v0] Error saving product:", err)
-      setError(err instanceof Error ? err.message : "Error al guardar el producto")
+      const errorMessage = err instanceof Error ? err.message : "Error al guardar el producto"
+      const diagnosticInfo =
+        typeof window !== "undefined"
+          ? `\n\nDiagnóstico:\n- Página actual: ${window.location.href}\n- API configurada: ${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}\n\n¿Estás accediendo desde localhost:3000?`
+          : ""
+      setError(errorMessage + diagnosticInfo)
     } finally {
       setIsLoading(false)
     }
