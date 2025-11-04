@@ -46,6 +46,8 @@ export default function RegistroPage() {
     setIsLoading(true)
 
     try {
+      const returnUrl = typeof window !== "undefined" ? sessionStorage.getItem("checkout_return_url") : null
+
       const response = await api.register({
         nombre: formData.nombre,
         email: formData.email,
@@ -55,18 +57,27 @@ export default function RegistroPage() {
 
       console.log("[v0] Registration successful:", response)
 
-      router.push("/login?registered=true")
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("checkout_return_url")
+      }
+
+      if (returnUrl) {
+        router.push(`/login?registered=true&returnUrl=${encodeURIComponent(returnUrl)}`)
+      } else {
+        router.push("/login?registered=true")
+      }
     } catch (err) {
       console.error("[v0] Registration error:", err)
       const errorMessage = err instanceof Error ? err.message : "Error al registrarse"
 
       if (errorMessage.includes("404")) {
-        setError(
-          "Error: No se pudo completar el registro. " +
-            "Verifica que el servidor Laravel esté corriendo y que el endpoint de usuarios esté configurado correctamente.",
-        )
-      } else {
+        setError("El servidor no pudo procesar el registro. Por favor contacta al administrador.")
+      } else if (errorMessage.includes("email ya está registrado")) {
+        setError("Este email ya está registrado. Intenta iniciar sesión.")
+      } else if (errorMessage.includes("validación")) {
         setError(errorMessage)
+      } else {
+        setError("Error al registrarse. Por favor intenta nuevamente.")
       }
     } finally {
       setIsLoading(false)
