@@ -374,17 +374,27 @@ class ApiClient {
   }
 
   async getProductos(): Promise<ApiResponse<Producto[]>> {
-    const response = await this.request<any>("/productos?ordenar_por=created_at&orden=desc&por_pagina=100")
+    const response = await this.request<any>("/productos?ordenar_por=created_at&orden=desc&por_pagina=1000")
     console.log("[v0] getProductos raw response:", response)
+    console.log("[v0] getProductos response.data type:", typeof response.data)
+    console.log("[v0] getProductos response.data keys:", response.data ? Object.keys(response.data) : "no data")
 
     // Backend returns: { success: true, data: { productos: [...], paginacion: {...} } }
-    if (response.success && response.data && response.data.productos) {
-      return {
-        ...response,
-        data: response.data.productos,
+    if (response.success && response.data) {
+      if (response.data.productos && Array.isArray(response.data.productos)) {
+        console.log("[v0] Found productos array with length:", response.data.productos.length)
+        console.log("[v0] Pagination info:", response.data.paginacion)
+        return {
+          ...response,
+          data: response.data.productos,
+        }
+      } else if (Array.isArray(response.data)) {
+        console.log("[v0] Data is directly an array with length:", response.data.length)
+        return response
       }
     }
 
+    console.warn("[v0] Unexpected response structure, returning as-is")
     return response
   }
 
