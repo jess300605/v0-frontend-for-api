@@ -43,38 +43,85 @@ export default function CatalogoPage() {
 
   const loadProductos = async () => {
     try {
+      console.log("[v0] ========== LOADING PRODUCTOS ==========")
       console.log("[v0] Catalog: Loading productos at", new Date().toISOString())
       console.log("[v0] Catalog: API URL:", process.env.NEXT_PUBLIC_API_URL)
+      console.log("[v0] Catalog: Calling api.getProductos()...")
+
       const response = await api.getProductos()
-      console.log("[v0] Catalog: API response:", response)
+
+      console.log("[v0] Catalog: API response received")
+      console.log("[v0] Catalog: Response success:", response.success)
+      console.log("[v0] Catalog: Response data type:", typeof response.data)
+      console.log("[v0] Catalog: Response data:", response.data)
 
       let productosData: Producto[] = []
 
       if (response.success) {
         if (response.data?.productos && Array.isArray(response.data.productos)) {
           productosData = response.data.productos
+          console.log("[v0] Catalog: Using response.data.productos")
         } else if (Array.isArray(response.data)) {
           productosData = response.data
+          console.log("[v0] Catalog: Using response.data directly")
+        } else {
+          console.error("[v0] Catalog: ❌ Unexpected data structure:", response.data)
         }
+      } else {
+        console.error("[v0] Catalog: ❌ Response success is false")
+        console.error("[v0] Catalog: Error message:", response.message)
+        console.error("[v0] Catalog: Error:", response.error)
       }
 
       console.log("[v0] Catalog: Total productos from API:", productosData.length)
+
+      productosData.forEach((p, index) => {
+        console.log(`[v0] Catalog: Product ${index + 1}:`, {
+          id: p.id,
+          nombre: p.nombre,
+          activo: p.activo,
+          stock: p.stock,
+          willBeShown: p.activo && p.stock > 0,
+        })
+      })
+
       const activeProducts = productosData.filter((p) => p.activo && p.stock > 0)
       console.log("[v0] Catalog: Active productos with stock:", activeProducts.length)
       console.log("[v0] Catalog: Filtered out productos:", productosData.length - activeProducts.length)
 
+      const filteredOut = productosData.filter((p) => !(p.activo && p.stock > 0))
+      if (filteredOut.length > 0) {
+        console.log("[v0] Catalog: Products filtered out:")
+        filteredOut.forEach((p) => {
+          const reasons = []
+          if (!p.activo) reasons.push("not active")
+          if (p.stock <= 0) reasons.push("no stock")
+          console.log(`[v0] Catalog:   - ${p.nombre} (ID: ${p.id}): ${reasons.join(", ")}`)
+        })
+      }
+
       setProductos(activeProducts)
       setFilteredProductos(activeProducts)
       setLoading(false)
+      console.log("[v0] ========== PRODUCTOS LOADED SUCCESSFULLY ==========")
     } catch (error) {
+      console.error("[v0] ========== ERROR LOADING PRODUCTOS ==========")
       console.error("[v0] Catalog: Error loading products:", error)
       console.error("[v0] Catalog: Error details:", {
         message: error instanceof Error ? error.message : String(error),
         type: typeof error,
         stack: error instanceof Error ? error.stack : undefined,
       })
+      console.error("[v0] ================================================")
 
-      alert("Error al cargar los productos. Verifica que el servidor Laravel esté corriendo en http://localhost:8000")
+      alert(
+        "Error al cargar los productos.\n\n" +
+          "Posibles causas:\n" +
+          "1. El servidor Laravel no está corriendo\n" +
+          "2. El endpoint GET /api/productos tiene un error\n" +
+          "3. Hay un problema con la base de datos\n\n" +
+          "Revisa la consola del navegador y los logs del servidor Laravel para más detalles.",
+      )
       setLoading(false)
     }
   }
