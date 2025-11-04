@@ -190,6 +190,31 @@ export function ProductDialog({ open, onClose, product }: ProductDialogProps) {
 
       if (response.success) {
         console.log("[v0] ✓ Product saved successfully!")
+
+        if (!product && response.data?.id) {
+          console.log("[v0] Verifying product creation with ID:", response.data.id)
+          try {
+            const verifyResponse = await api.getProducto(response.data.id)
+            if (verifyResponse.success) {
+              console.log("[v0] ✓✓ Product verified in backend:", verifyResponse.data)
+              alert(
+                `✓ Producto creado exitosamente!\n\nID: ${response.data.id}\nNombre: ${response.data.nombre}\n\nEl producto existe en el backend. Si no aparece en la lista, haz clic en "Actualizar Lista".`,
+              )
+            } else {
+              console.warn("[v0] Product created but verification failed")
+              alert(
+                `Producto creado (ID: ${response.data.id}) pero no se pudo verificar. Recarga la página para verlo.`,
+              )
+            }
+          } catch (verifyError) {
+            console.error("[v0] Verification request failed:", verifyError)
+            alert(
+              `Producto creado (ID: ${response.data.id}) pero la verificación falló. El servidor Laravel puede estar teniendo problemas. Revisa la terminal del backend y recarga la página.`,
+            )
+          }
+        }
+        // </CHANGE>
+
         console.log("[v0] Closing dialog and refreshing list...")
         onClose(true)
       } else {
