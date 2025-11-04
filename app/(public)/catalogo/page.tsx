@@ -44,6 +44,7 @@ export default function CatalogoPage() {
   const loadProductos = async () => {
     try {
       console.log("[v0] Catalog: Loading productos at", new Date().toISOString())
+      console.log("[v0] Catalog: API URL:", process.env.NEXT_PUBLIC_API_URL)
       const response = await api.getProductos()
       console.log("[v0] Catalog: API response:", response)
 
@@ -64,9 +65,16 @@ export default function CatalogoPage() {
 
       setProductos(activeProducts)
       setFilteredProductos(activeProducts)
+      setLoading(false)
     } catch (error) {
-      console.error("[v0] Error loading products:", error)
-    } finally {
+      console.error("[v0] Catalog: Error loading products:", error)
+      console.error("[v0] Catalog: Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        type: typeof error,
+        stack: error instanceof Error ? error.stack : undefined,
+      })
+
+      alert("Error al cargar los productos. Verifica que el servidor Laravel esté corriendo en http://localhost:8000")
       setLoading(false)
     }
   }
@@ -144,10 +152,18 @@ export default function CatalogoPage() {
     setShowDetailDialog(true)
   }
 
-  const handleCreateDialogClose = (refresh?: boolean) => {
+  const handleCreateDialogClose = async (refresh?: boolean) => {
+    console.log("[v0] Catalog: Dialog closed, refresh:", refresh)
     setShowCreateDialog(false)
     if (refresh) {
-      loadProductos()
+      console.log("[v0] Catalog: Refreshing product list...")
+      try {
+        await loadProductos()
+        console.log("[v0] Catalog: Product list refreshed successfully")
+      } catch (error) {
+        console.error("[v0] Catalog: Failed to refresh product list:", error)
+        alert("El producto fue creado, pero no se pudo actualizar la lista. Recarga la página manualmente (F5).")
+      }
     }
   }
 
@@ -177,12 +193,17 @@ export default function CatalogoPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-4xl font-bold">Catálogo de Productos</h1>
-        {isAdmin && (
-          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Agregar Producto
+        <div className="flex gap-2">
+          <Button onClick={() => loadProductos()} variant="outline" className="gap-2">
+            Actualizar Lista
           </Button>
-        )}
+          {isAdmin && (
+            <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar Producto
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
