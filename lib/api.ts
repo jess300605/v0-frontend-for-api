@@ -296,7 +296,7 @@ class ApiClient {
     contraseña: string
     contraseña_confirmation: string
   }): Promise<ApiResponse<AuthData>> {
-    return this.request<AuthData>("/usuarios", {
+    return this.request<AuthData>("/register", {
       method: "POST",
       body: JSON.stringify({
         ...data,
