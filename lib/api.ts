@@ -374,28 +374,70 @@ class ApiClient {
   }
 
   async getProductos(): Promise<ApiResponse<Producto[]>> {
-    const response = await this.request<any>("/productos?ordenar_por=created_at&orden=desc&por_pagina=1000")
-    console.log("[v0] getProductos raw response:", response)
-    console.log("[v0] getProductos response.data type:", typeof response.data)
-    console.log("[v0] getProductos response.data keys:", response.data ? Object.keys(response.data) : "no data")
+    console.log("[v0] getProductos: Starting multi-page fetch...")
 
-    // Backend returns: { success: true, data: { productos: [...], paginacion: {...} } }
-    if (response.success && response.data) {
+    let allProductos: Producto[] = []
+    let currentPage = 1
+    let hasMorePages = true
+
+    while (hasMorePages) {
+      console.log(`[v0] getProductos: Fetching page ${currentPage}...`)
+
+      const response = await this.request<any>(
+        `/productos?orden_por=created_at&direccion=desc&per_page=50&page=${currentPage}`,
+      )
+
+      console.log(`[v0] getProductos page ${currentPage} raw response:`, response)
+      console.log(`[v0] getProductos response.data type:`, typeof response.data)
+
+      if (!response.success || !response.data) {
+        console.error("[v0] getProductos: Invalid response structure")
+        break
+      }
+
+      // Backend returns: { success: true, data: { productos: [...], paginacion: {...} } }
       if (response.data.productos && Array.isArray(response.data.productos)) {
-        console.log("[v0] Found productos array with length:", response.data.productos.length)
-        console.log("[v0] Pagination info:", response.data.paginacion)
-        return {
-          ...response,
-          data: response.data.productos,
+        const productos = response.data.productos
+        const paginacion = response.data.paginacion
+
+        console.log(`[v0] Page ${currentPage}: Found ${productos.length} productos`)
+        console.log(`[v0] Pagination info:`, paginacion)
+
+        allProductos = [...allProductos, ...productos]
+
+        // Check if there are more pages
+        if (paginacion) {
+          const { pagina_actual, total_paginas } = paginacion
+          console.log(`[v0] Current page: ${pagina_actual}/${total_paginas}`)
+
+          if (pagina_actual < total_paginas) {
+            currentPage++
+            hasMorePages = true
+          } else {
+            hasMorePages = false
+            console.log(`[v0] ✓ All pages fetched. Total productos: ${allProductos.length}`)
+          }
+        } else {
+          // No pagination info, assume single page
+          hasMorePages = false
         }
       } else if (Array.isArray(response.data)) {
+        // Data is directly an array (no pagination)
         console.log("[v0] Data is directly an array with length:", response.data.length)
-        return response
+        allProductos = response.data
+        hasMorePages = false
+      } else {
+        console.warn("[v0] Unexpected response structure")
+        hasMorePages = false
       }
     }
 
-    console.warn("[v0] Unexpected response structure, returning as-is")
-    return response
+    console.log(`[v0] getProductos: ✓ COMPLETE - Total productos fetched: ${allProductos.length}`)
+
+    return {
+      success: true,
+      data: allProductos,
+    }
   }
 
   async getProducto(id: number): Promise<ApiResponse<Producto>> {
