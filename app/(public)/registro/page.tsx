@@ -38,8 +38,8 @@ export default function RegistroPage() {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres")
+    if (formData.password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres")
       return
     }
 
@@ -55,15 +55,15 @@ export default function RegistroPage() {
 
       console.log("[v0] Registration successful:", response)
 
-      router.push("/?registered=true")
+      router.push("/login?registered=true")
     } catch (err) {
       console.error("[v0] Registration error:", err)
       const errorMessage = err instanceof Error ? err.message : "Error al registrarse"
 
       if (errorMessage.includes("404")) {
         setError(
-          "Error de configuración: El endpoint de registro no existe en la API. " +
-            "Por favor verifica que tu API Laravel tenga configurado el endpoint POST /api/register",
+          "Error: No se pudo completar el registro. " +
+            "Verifica que el servidor Laravel esté corriendo y que el endpoint de usuarios esté configurado correctamente.",
         )
       } else {
         setError(errorMessage)
